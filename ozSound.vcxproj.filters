@@ -1,0 +1,204 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="audio">
+      <UniqueIdentifier>{690be7c1-2b9b-4322-9024-0e84c5c7e2db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="audio\json">
+      <UniqueIdentifier>{57be564c-74ef-4cb5-a18a-274dac25e660}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="audio\logger">
+      <UniqueIdentifier>{d9584303-dd7f-4f83-b501-bece7e15ce29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="audio\VST3">
+      <UniqueIdentifier>{092f4582-4145-44fe-bcfd-7890bfc0f8f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals">
+      <UniqueIdentifier>{2c48d24d-e765-415b-91ad-4a947211f8b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\VST3SDK">
+      <UniqueIdentifier>{eb43bf85-3330-48ec-88c7-522bb052892d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Externals\json">
+      <UniqueIdentifier>{a4995606-a8ca-43bf-82a3-0474cf486a09}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="audio\Audio.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
+    <ClCompile Include="audio\AudioEffect.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
+    <ClCompile Include="audio\AudioEffectManager.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
+    <ClCompile Include="audio\AudioSystem.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
+    <ClCompile Include="audio\SoundEngine.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
+    <ClCompile Include="audio\SoundInstance.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
+    <ClCompile Include="audio\SubmixVoice.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
+    <ClCompile Include="audio\VoiceInstance.cpp">
+      <Filter>audio</Filter>
+    </ClCompile>
+    <ClCompile Include="audio\VST3\VST3Effect.cpp">
+      <Filter>audio\VST3</Filter>
+    </ClCompile>
+    <ClCompile Include="audio\VST3\VST3Host.cpp">
+      <Filter>audio\VST3</Filter>
+    </ClCompile>
+    <ClCompile Include="audio\VST3\VST3Module.cpp">
+      <Filter>audio\VST3</Filter>
+    </ClCompile>
+    <ClCompile Include="audio\VST3\VST3ParameterManager.cpp">
+      <Filter>audio\VST3</Filter>
+    </ClCompile>
+    <ClCompile Include="audio\VST3\VST3Plugin.cpp">
+      <Filter>audio\VST3</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\hosting\connectionproxy.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\hosting\eventlist.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\hosting\hostclasses.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\hosting\module.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\hosting\module_win32.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\hosting\parameterchanges.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\hosting\pluginterfacesupport.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\hosting\plugprovider.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\base\source\baseiids.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\base\source\fobject.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\base\source\fstring.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\base\source\timer.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\common\commonstringconvert.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\common\memorystream.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\vstinitiids.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\utility\stringconvert.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\base\thread\source\flock.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\pluginterfaces\base\coreiids.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\pluginterfaces\base\funknown.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\pluginterfaces\base\ustring.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\base\source\updatehandler.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\common\threadchecker_win32.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tmp\temp\Externals\VST3SDK\base\source\fdebug.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="audio\Audio.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\AudioEffect.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\AudioEffectBase.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\AudioEffectDef.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\AudioEffectManager.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\AudioSystem.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\SoundDef.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\SoundEngine.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\SoundEventDef.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\SoundInstance.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\SubmixVoice.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\VoiceCallback.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\VoiceInstance.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\VST3\VST3Effect.h">
+      <Filter>audio\VST3</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\VST3\VST3Host.h">
+      <Filter>audio\VST3</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\VST3\VST3Module.h">
+      <Filter>audio\VST3</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\VST3\VST3ParameterManager.h">
+      <Filter>audio\VST3</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\VST3\VST3Plugin.h">
+      <Filter>audio\VST3</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\Logger\SoundLogger.h">
+      <Filter>audio\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\JsonUtils\JsonUtils.h">
+      <Filter>audio\json</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\nlohmann\json.hpp">
+      <Filter>Externals\json</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".editorconfig" />
+  </ItemGroup>
+</Project>

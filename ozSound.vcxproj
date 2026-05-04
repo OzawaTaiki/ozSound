@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{e899b6bb-07e7-4cf5-9173-ae7c1632f74b}</ProjectGuid>
+    <RootNamespace>ozSound</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(solutionDir)bin\output\$(Configuration)\</OutDir>
+    <IntDir>$(solutionDir)\bin\obj\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(solutionDir)bin\output\$(Configuration)\</OutDir>
+    <IntDir>$(solutionDir)\bin\obj\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(ProjectDir)externals\nlohmann;$(ProjectDir)externals\VST3SDK;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(ProjectDir)externals\nlohmann;$(ProjectDir)externals\VST3SDK;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\tmp\temp\Externals\VST3SDK\base\source\fdebug.cpp" />
+    <ClCompile Include="audio\Audio.cpp" />
+    <ClCompile Include="audio\AudioEffect.cpp" />
+    <ClCompile Include="audio\AudioEffectManager.cpp" />
+    <ClCompile Include="audio\AudioSystem.cpp" />
+    <ClCompile Include="audio\SoundEngine.cpp" />
+    <ClCompile Include="audio\SoundInstance.cpp" />
+    <ClCompile Include="audio\SubmixVoice.cpp" />
+    <ClCompile Include="audio\VoiceInstance.cpp" />
+    <ClCompile Include="audio\VST3\VST3Effect.cpp" />
+    <ClCompile Include="audio\VST3\VST3Host.cpp" />
+    <ClCompile Include="audio\VST3\VST3Module.cpp" />
+    <ClCompile Include="audio\VST3\VST3ParameterManager.cpp" />
+    <ClCompile Include="audio\VST3\VST3Plugin.cpp" />
+    <ClCompile Include="externals\VST3SDK\base\source\baseiids.cpp" />
+    <ClCompile Include="externals\VST3SDK\base\source\fobject.cpp" />
+    <ClCompile Include="externals\VST3SDK\base\source\fstring.cpp" />
+    <ClCompile Include="externals\VST3SDK\base\source\timer.cpp" />
+    <ClCompile Include="externals\VST3SDK\base\source\updatehandler.cpp" />
+    <ClCompile Include="externals\VST3SDK\base\thread\source\flock.cpp" />
+    <ClCompile Include="externals\VST3SDK\pluginterfaces\base\coreiids.cpp" />
+    <ClCompile Include="externals\VST3SDK\pluginterfaces\base\funknown.cpp" />
+    <ClCompile Include="externals\VST3SDK\pluginterfaces\base\ustring.cpp" />
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\common\commonstringconvert.cpp" />
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\common\memorystream.cpp" />
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\common\threadchecker_win32.cpp" />
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\hosting\connectionproxy.cpp" />
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\hosting\eventlist.cpp" />
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\hosting\hostclasses.cpp" />
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\hosting\module.cpp" />
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\hosting\module_win32.cpp">
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdcpp17</LanguageStandard>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|x64'">stdcpp17</LanguageStandard>
+    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\hosting\parameterchanges.cpp" />
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\hosting\pluginterfacesupport.cpp" />
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\hosting\plugprovider.cpp" />
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\utility\stringconvert.cpp" />
+    <ClCompile Include="externals\VST3SDK\public.sdk\source\vst\vstinitiids.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="audio\Audio.h" />
+    <ClInclude Include="audio\AudioEffect.h" />
+    <ClInclude Include="audio\AudioEffectBase.h" />
+    <ClInclude Include="audio\AudioEffectDef.h" />
+    <ClInclude Include="audio\AudioEffectManager.h" />
+    <ClInclude Include="audio\AudioSystem.h" />
+    <ClInclude Include="audio\JsonUtils\JsonUtils.h" />
+    <ClInclude Include="audio\Logger\SoundLogger.h" />
+    <ClInclude Include="audio\SoundDef.h" />
+    <ClInclude Include="audio\SoundEngine.h" />
+    <ClInclude Include="audio\SoundEventDef.h" />
+    <ClInclude Include="audio\SoundInstance.h" />
+    <ClInclude Include="audio\SubmixVoice.h" />
+    <ClInclude Include="audio\VoiceCallback.h" />
+    <ClInclude Include="audio\VoiceInstance.h" />
+    <ClInclude Include="audio\VST3\VST3Effect.h" />
+    <ClInclude Include="audio\VST3\VST3Host.h" />
+    <ClInclude Include="audio\VST3\VST3Module.h" />
+    <ClInclude Include="audio\VST3\VST3ParameterManager.h" />
+    <ClInclude Include="audio\VST3\VST3Plugin.h" />
+    <ClInclude Include="externals\nlohmann\json.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".editorconfig" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
