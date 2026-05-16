@@ -129,9 +129,7 @@
     <ClCompile Include="externals\VST3SDK\public.sdk\source\common\threadchecker_win32.cpp">
       <Filter>Externals\VST3SDK</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\tmp\temp\Externals\VST3SDK\base\source\fdebug.cpp">
-      <Filter>Externals\VST3SDK</Filter>
-    </ClCompile>
+    <ClCompile Include="externals\VST3SDK\base\source\fdebug.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="audio\Audio.h">
@@ -196,6 +194,9 @@
     </ClInclude>
     <ClInclude Include="externals\nlohmann\json.hpp">
       <Filter>Externals\json</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\SubmixDef.h">
+      <Filter>audio</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
