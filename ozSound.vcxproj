@@ -71,12 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(solutionDir)bin\output\$(Configuration)\</OutDir>
-    <IntDir>$(solutionDir)\bin\obj\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)bin\output\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)\bin\obj\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(solutionDir)bin\output\$(Configuration)\</OutDir>
-    <IntDir>$(solutionDir)\bin\obj\$(Configuration)\</IntDir>
+    <OutDir>$(ProjectDir)bin\output\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)\bin\obj\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -143,7 +143,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\tmp\temp\Externals\VST3SDK\base\source\fdebug.cpp" />
     <ClCompile Include="audio\Audio.cpp" />
     <ClCompile Include="audio\AudioEffect.cpp" />
     <ClCompile Include="audio\AudioEffectManager.cpp" />
@@ -157,6 +156,7 @@
     <ClCompile Include="audio\VST3\VST3Module.cpp" />
     <ClCompile Include="audio\VST3\VST3ParameterManager.cpp" />
     <ClCompile Include="audio\VST3\VST3Plugin.cpp" />
+    <ClCompile Include="externals\VST3SDK\base\source\fdebug.cpp" />
     <ClCompile Include="externals\VST3SDK\base\source\baseiids.cpp" />
     <ClCompile Include="externals\VST3SDK\base\source\fobject.cpp" />
     <ClCompile Include="externals\VST3SDK\base\source\fstring.cpp" />
