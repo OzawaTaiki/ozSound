@@ -196,6 +196,7 @@
     <ClInclude Include="audio\SoundEngine.h" />
     <ClInclude Include="audio\SoundEventDef.h" />
     <ClInclude Include="audio\SoundInstance.h" />
+    <ClInclude Include="audio\SubmixDef.h" />
     <ClInclude Include="audio\SubmixVoice.h" />
     <ClInclude Include="audio\VoiceCallback.h" />
     <ClInclude Include="audio\VoiceInstance.h" />
