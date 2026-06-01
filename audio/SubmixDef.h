@@ -10,31 +10,31 @@ namespace ozSound
 
 struct InsertSlot
 {
-    std::string effectName; // ‘}“ü‚·‚éƒGƒtƒFƒNƒg‚Ì–¼‘O
-    bool enabled = true;     // ƒGƒtƒFƒNƒg‚Ì—LŒø/–³Œø
+    std::string effectName; // æŒ¿å…¥ã™ã‚‹ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã®åå‰
+    bool enabled = true;     // ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã®æœ‰åŠ¹/ç„¡åŠ¹
 };
 
 struct SendSlot
 {
-    std::string targetSubmix; // ‘—Mæ‚ÌƒTƒuƒ~ƒbƒNƒX–¼
-    float sendLevel = 1.0f;   // ‘—MƒŒƒxƒ‹i0.0`1.0j
-    bool enabled = true;      // ‘—M‚Ì—LŒø/–³Œø
+    std::string targetSubmix; // é€ä¿¡å…ˆã®ã‚µãƒ–ãƒŸãƒƒã‚¯ã‚¹å
+    float sendLevel = 1.0f;   // é€ä¿¡ãƒ¬ãƒ™ãƒ«ï¼ˆ0.0ï½1.0ï¼‰
+    bool enabled = true;      // é€ä¿¡ã®æœ‰åŠ¹/ç„¡åŠ¹
 
 };
 
 struct SubmixDef
 {
-    std::string name; // ƒTƒuƒ~ƒbƒNƒX‚Ì–¼‘Oiƒ‹[ƒeƒBƒ“ƒO‚Ì‚½‚ß‚ÉˆêˆÓ‚Å‚ ‚é•K—v‚ª‚ ‚éj
-    std::vector<InsertSlot> inserts; // ‘}“üƒGƒtƒFƒNƒgƒXƒƒbƒg‚ÌƒŠƒXƒg
-    std::vector<SendSlot> sends;     // ‘—MƒXƒƒbƒg‚ÌƒŠƒXƒg
-    float volume = 1.0f; // ƒTƒuƒ~ƒbƒNƒX‚Ì‰¹—Êi0.0`1.0j
-    float pan = 0.0f;    // ƒTƒuƒ~ƒbƒNƒX‚Ìƒpƒ“i-1.0‚ª¶A0‚ªƒZƒ“ƒ^[A1.0‚ª‰Ej
-    bool mute = false;   // ƒTƒuƒ~ƒbƒNƒX‚Ìƒ~ƒ…[ƒgó‘Ô
-    bool solo = false;   // ƒTƒuƒ~ƒbƒNƒX‚Ìƒ\ƒó‘Ô
+    std::string name; // ã‚µãƒ–ãƒŸãƒƒã‚¯ã‚¹ã®åå‰ï¼ˆãƒ«ãƒ¼ãƒ†ã‚£ãƒ³ã‚°ã®ãŸã‚ã«ä¸€æ„ã§ã‚ã‚‹å¿…è¦ãŒã‚ã‚‹ï¼‰
+    std::vector<InsertSlot> inserts; // æŒ¿å…¥ã‚¨ãƒ•ã‚§ã‚¯ãƒˆã‚¹ãƒ­ãƒƒãƒˆã®ãƒªã‚¹ãƒˆ
+    std::vector<SendSlot> sends;     // é€ä¿¡ã‚¹ãƒ­ãƒƒãƒˆã®ãƒªã‚¹ãƒˆ
+    float volume = 1.0f; // ã‚µãƒ–ãƒŸãƒƒã‚¯ã‚¹ã®éŸ³é‡ï¼ˆ0.0ï½1.0ï¼‰
+    float pan = 0.0f;    // ã‚µãƒ–ãƒŸãƒƒã‚¯ã‚¹ã®ãƒ‘ãƒ³ï¼ˆ-1.0ãŒå·¦ã€0ãŒã‚»ãƒ³ã‚¿ãƒ¼ã€1.0ãŒå³ï¼‰
+    bool mute = false;   // ã‚µãƒ–ãƒŸãƒƒã‚¯ã‚¹ã®ãƒŸãƒ¥ãƒ¼ãƒˆçŠ¶æ…‹
+    bool solo = false;   // ã‚µãƒ–ãƒŸãƒƒã‚¯ã‚¹ã®ã‚½ãƒ­çŠ¶æ…‹
 };
 
 /// -------------------------------
-/// JSONƒVƒŠƒAƒ‰ƒCƒY/ƒfƒVƒŠƒAƒ‰ƒCƒY
+/// JSONã‚·ãƒªã‚¢ãƒ©ã‚¤ã‚º/ãƒ‡ã‚·ãƒªã‚¢ãƒ©ã‚¤ã‚º
 
 inline void to_json(json& j, const InsertSlot& v)
 {
@@ -81,12 +81,13 @@ inline void to_json(json& j, const SubmixDef& v)
 
 inline void from_json(const json& j, SubmixDef& v)
 {
-    v.name      = j.value("name",    std::string("")     );
+    v.name      = j.value("name", std::string(""));
     v.inserts   = j.value("inserts", std::vector<InsertSlot>{});
-    v.sends     = j.value("sends",   std::vector<SendSlot>{}  );
-    v.volume    = j.value("volume",  1.0f                );
-    v.pan       = j.value("pan",     0.0f                );
-    v.mute      = j.value("mute",    false               );
-    v.solo      = j.value("solo",    false               );
+    v.sends     = j.value("sends", std::vector<SendSlot>{});
+    v.volume    = j.value("volume", 1.0f);
+    v.pan       = j.value("pan", 0.0f);
+    v.mute      = j.value("mute", false);
+    v.solo      = j.value("solo", false);
 
+}
 }// namespace ozSound

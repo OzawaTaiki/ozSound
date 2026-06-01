@@ -15,6 +15,7 @@ enum class SoundEventType
     Pause,
     Resume,
     SetVolume,
+    SetSpeed,
     Delay,
     DuckingStart,
     DuckingEnd,
@@ -25,6 +26,7 @@ struct SoundEventAction
     SoundEventType type = SoundEventType::Play;
     std::string soundId = ""; // Play の場合に使用
     float volume = 0.5f;       // SetVolume の場合に使用
+    float speed = 1.0f;         // SetSpeed
     bool loop = false;          // Play の場合に使用
     std::vector<std::string> effects = {};// 適用するエフェクト
 
@@ -51,6 +53,7 @@ NLOHMANN_JSON_SERIALIZE_ENUM(SoundEventType, {
     {SoundEventType::Pause,         "Pause"         },
     {SoundEventType::Resume,        "Resume"        },
     {SoundEventType::SetVolume,     "SetVolume"     },
+    {SoundEventType::SetSpeed,      "SetSpeed"      },
     {SoundEventType::Delay,         "Delay"         },
     {SoundEventType::DuckingStart,  "DuckingStart"  },
     {SoundEventType::DuckingEnd,    "DuckingEnd"    },
@@ -63,6 +66,7 @@ inline void to_json(json& j, const SoundEventAction& v)
         {"type",            v.type          },
         {"soundId",         v.soundId       },
         {"volume",          v.volume        },
+        {"speed",           v.speed         },
         {"loop",            v.loop          },
         {"effects",         v.effects       },
         {"startTime",       v.startTime     },
@@ -78,6 +82,7 @@ inline void from_json(const json& j, SoundEventAction& v)
     v.type          = j.value("type",           SoundEventType::Play        );
     v.soundId       = j.value("soundId",        std::string("")             );
     v.volume        = j.value("volume",         1.0f                        );
+    v.speed         = j.value("speed",          1.0f                        );
     v.loop          = j.value("loop",           false                       );
     v.effects       = j.value("effects",        std::vector<std::string>{}  );
     v.startTime     = j.value("startTime",      0.0f                        );
