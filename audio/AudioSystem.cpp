@@ -286,7 +286,6 @@ XAUDIO2_VOICE_DETAILS AudioSystem::GetMasterVoiceDetails()
 
 AudioSystem::~AudioSystem()
 {
-    Finalize();
 }
 
 } // namespace ozSound

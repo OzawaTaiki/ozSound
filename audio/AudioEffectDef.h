@@ -19,7 +19,7 @@ struct AudioEffectDef
     std::string className; // エフェクトのクラス名(vst)
     AudioEffectType type; // エフェクトの種類
 };
-
+ 
 NLOHMANN_JSON_SERIALIZE_ENUM(AudioEffectType, {
     {AudioEffectType::Native, "Native"},
     {AudioEffectType::VST3,   "VST3"  },

@@ -189,6 +189,15 @@ void SoundEngine::PostEvent(const std::string& eventName)
                     SetVolume(h, action.volume);
                 break;
             }
+            case SoundEventType::SetSpeed:
+            {
+                std::vector<SoundHandle> targets;
+                for (const auto& [handle, ps] : playingSounds_)
+                    if (ps.soundId == action.soundId)
+                        targets.push_back(handle);
+                for (auto h : targets)
+                    SetSpeed(h, action.speed);
+            }
             default:
                 break;
         }
@@ -335,6 +344,16 @@ void SoundEngine::SetVolume(SoundHandle handle, float volume)
         it->second.voiceInstance->SetVolume(volume);
 }
 
+void SoundEngine::SetSpeed(SoundHandle handle, float speed)
+{
+    auto it = playingSounds_.find(handle);
+    if (it == playingSounds_.end())
+        return;
+
+    if (it->second.voiceInstance)
+        it->second.voiceInstance->SetPlaySpeed(speed);
+}
+
 bool SoundEngine::IsPlaying(SoundHandle handle) const
 {
     auto it = playingSounds_.find(handle);
@@ -419,656 +438,656 @@ static constexpr const char* kAudioConfigPath = "Resources/Audio/AudioConfig.jso
 
 void SoundEngine::ImGui(bool* _open)
 {
-//    if (!::ImGui::Begin("SoundEngine", _open))
-//    {
-//        ::ImGui::End();
-//        return;
-//    }
-//
-//    SoundEngine* engine = GetInstance();
-//    AudioSystem* audio  = AudioSystem::GetInstance();
-//
-//    if (!::ImGui::BeginTabBar("SoundEngineTabs"))
-//    {
-//        ::ImGui::End();
-//        return;
-//    }
-//
-//    // ================================================================
-//    // Tab 1: Mixer
-//    // ================================================================
-//    if (::ImGui::BeginTabItem("Mixer"))
-//    {
-//        float master = audio->GetMasterVolume();
-//        if (::ImGui::SliderFloat("Master", &master, 0.0f, 1.5f, "%.2f"))
-//            audio->SetMasterVolume(master);
-//
-//        ::ImGui::Separator();
-//
-//        static std::unordered_map<std::string, float> preMuteVolumes;
-//        std::string pendingRemove;
-//
-//        for (const auto& [name, sv] : audio->GetAllSubmixes())
-//        {
-//            float vol = sv->GetVolume();
-//            ::ImGui::Text("%-12s", name.c_str());
-//            ::ImGui::SameLine();
-//            std::string sliderId = "##vol_" + name;
-//            ::ImGui::SetNextItemWidth(180.0f);
-//            if (::ImGui::SliderFloat(sliderId.c_str(), &vol, 0.0f, 1.5f, "%.2f"))
-//                sv->SetVolume(vol);
-//
-//            ::ImGui::SameLine();
-//            bool isMuted = (sv->GetVolume() < 0.001f);
-//            std::string muteId = (isMuted ? "Unmute##mu_" : "Mute##mu_") + name;
-//            if (::ImGui::SmallButton(muteId.c_str()))
-//            {
-//                if (isMuted)
-//                {
-//                    float prev = preMuteVolumes.count(name) ? preMuteVolumes[name] : 1.0f;
-//                    sv->SetVolume(prev);
-//                }
-//                else
-//                {
-//                    preMuteVolumes[name] = sv->GetVolume();
-//                    sv->SetVolume(0.0f);
-//                }
-//            }
-//
-//            if (name != "BGM" && name != "SE")
-//            {
-//                ::ImGui::SameLine();
-//                std::string delId = "x##del_" + name;
-//                if (::ImGui::SmallButton(delId.c_str()))
-//                    pendingRemove = name;
-//            }
-//        }
-//        if (!pendingRemove.empty())
-//            audio->RemoveSubmix(pendingRemove);
-//
-//        ::ImGui::Separator();
-//
-//        if (::ImGui::Button("+ Add Submix"))
-//            ::ImGui::OpenPopup("AddSubmixPopup");
-//
-//        if (::ImGui::BeginPopup("AddSubmixPopup"))
-//        {
-//            static char newName[64] = {};
-//            static int  newChannels = 2;
-//            ::ImGui::InputText("Name",     newName,     sizeof(newName));
-//            ::ImGui::InputInt ("Channels", &newChannels);
-//            newChannels = std::max(1, newChannels);
-//
-//            if (::ImGui::Button("OK") && newName[0] != '\0')
-//            {
-//                audio->AddSubmix(newName, static_cast<uint32_t>(newChannels), 48000.0f, 1);
-//                newName[0] = '\0';
-//                ::ImGui::CloseCurrentPopup();
-//            }
-//            ::ImGui::SameLine();
-//            if (::ImGui::Button("Cancel"))
-//                ::ImGui::CloseCurrentPopup();
-//            ::ImGui::EndPopup();
-//        }
-//
-//        ::ImGui::SameLine();
-//        if (::ImGui::Button("Save JSON##mix"))
-//            audio->SaveSubmixConfig(kAudioConfigPath);
-//        ::ImGui::SameLine();
-//        if (::ImGui::Button("Load JSON##mix"))
-//            audio->LoadSubmixConfig(kAudioConfigPath);
-//
-//        ::ImGui::EndTabItem();
-//    }
-//
-//    // ================================================================
-//    // Tab 2: Sounds
-//    // ================================================================
-//    if (::ImGui::BeginTabItem("Sounds"))
-//    {
-//        static char soundFilter[128] = {};
-//        static int  submixFilterIdx  = 0;
-//
-//        ::ImGui::InputText("Filter##sf", soundFilter, sizeof(soundFilter));
-//
-//        std::vector<std::string> submixNames = {"All"};
-//        for (const auto& [n, _] : audio->GetAllSubmixes())
-//            submixNames.push_back(n);
-//        submixFilterIdx = std::min(submixFilterIdx, static_cast<int>(submixNames.size()) - 1);
-//
-//        ::ImGui::SameLine();
-//        ::ImGui::SetNextItemWidth(120.0f);
-//        if (::ImGui::BeginCombo("Submix##sf", submixNames[submixFilterIdx].c_str()))
-//        {
-//            for (int i = 0; i < static_cast<int>(submixNames.size()); i++)
-//            {
-//                bool sel = (submixFilterIdx == i);
-//                if (::ImGui::Selectable(submixNames[i].c_str(), sel))
-//                    submixFilterIdx = i;
-//                if (sel) ::ImGui::SetItemDefaultFocus();
-//            }
-//            ::ImGui::EndCombo();
-//        }
-//
-//        std::vector<const char*> busOptions;
-//        for (int i = 1; i < static_cast<int>(submixNames.size()); i++)
-//            busOptions.push_back(submixNames[i].c_str());
-//
-//        if (::ImGui::BeginTable("SoundsTable", 6,
-//            ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY,
-//            ImVec2(0, 280)))
-//        {
-//            ::ImGui::TableSetupScrollFreeze(0, 1);
-//            ::ImGui::TableSetupColumn("ID",      ImGuiTableColumnFlags_WidthStretch);
-//            ::ImGui::TableSetupColumn("Path",    ImGuiTableColumnFlags_WidthStretch);
-//            ::ImGui::TableSetupColumn("Type",    ImGuiTableColumnFlags_WidthFixed, 50.0f);
-//            ::ImGui::TableSetupColumn("Submix",  ImGuiTableColumnFlags_WidthFixed, 110.0f);
-//            ::ImGui::TableSetupColumn("Overlap", ImGuiTableColumnFlags_WidthFixed, 60.0f);
-//            ::ImGui::TableSetupColumn("Loaded",  ImGuiTableColumnFlags_WidthFixed, 50.0f);
-//            ::ImGui::TableHeadersRow();
-//
-//            for (auto& [id, def] : engine->soundDefs_)
-//            {
-//                const std::string& bus = def.submixName.empty() ? def.type : def.submixName;
-//
-//                if (soundFilter[0] != '\0' &&
-//                    id.find(soundFilter) == std::string::npos &&
-//                    def.filePath.find(soundFilter) == std::string::npos)
-//                    continue;
-//
-//                if (submixFilterIdx > 0 && bus != submixNames[submixFilterIdx])
-//                    continue;
-//
-//                ::ImGui::TableNextRow();
-//                ::ImGui::TableSetColumnIndex(0); ::ImGui::TextUnformatted(id.c_str());
-//                ::ImGui::TableSetColumnIndex(1); ::ImGui::TextUnformatted(def.filePath.c_str());
-//                ::ImGui::TableSetColumnIndex(2); ::ImGui::TextUnformatted(def.type.c_str());
-//
-//                ::ImGui::TableSetColumnIndex(3);
-//                int curIdx = 0;
-//                for (int i = 0; i < static_cast<int>(busOptions.size()); i++)
-//                    if (bus == busOptions[i]) { curIdx = i; break; }
-//                ::ImGui::SetNextItemWidth(-1.0f);
-//                std::string comboId = "##sub_" + id;
-//                if (!busOptions.empty() &&
-//                    ::ImGui::BeginCombo(comboId.c_str(), busOptions[curIdx]))
-//                {
-//                    for (int i = 0; i < static_cast<int>(busOptions.size()); i++)
-//                    {
-//                        bool sel = (curIdx == i);
-//                        if (::ImGui::Selectable(busOptions[i], sel))
-//                            def.submixName = busOptions[i];
-//                        if (sel) ::ImGui::SetItemDefaultFocus();
-//                    }
-//                    ::ImGui::EndCombo();
-//                }
-//
-//                ::ImGui::TableSetColumnIndex(4);
-//                std::string cbId = "##ovl_" + id;
-//                ::ImGui::Checkbox(cbId.c_str(), &def.enableOverlap);
-//
-//                ::ImGui::TableSetColumnIndex(5);
-//                bool loaded = engine->loadedInstances_.count(id) > 0;
-//                ::ImGui::TextUnformatted(loaded ? "OK" : "--");
-//            }
-//            ::ImGui::EndTable();
-//        }
-//
-//        ::ImGui::Separator();
-//
-//        // --- 個別サウンド追加 ---
-//        static bool s_openAddSound = false;
-//        if (::ImGui::Button("+ Add Sound"))
-//        {
-//            s_openAddSound = true;
-//            ::ImGui::OpenPopup("AddSoundPopup");
-//        }
-//
-//        if (::ImGui::BeginPopup("AddSoundPopup"))
-//        {
-//            static char addId[128]   = {};
-//            static char addPath[256] = {};
-//            static int  addTypeIdx   = 1; // 0=BGM, 1=SE
-//            static int  addSubmixIdx = 0;
-//            static bool addOverlap   = true;
-//
-//            // ボタンで開いた初回フレームにリセット（Escape等で閉じた残骸対策）
-//            if (s_openAddSound)
-//            {
-//                addId[0] = addPath[0] = '\0';
-//                addTypeIdx = 1; addSubmixIdx = 0; addOverlap = true;
-//                s_openAddSound = false;
-//            }
-//
-//            const char* typeOptions[] = { "BGM", "SE" };
-//            ::ImGui::InputText("ID##add",   addId,   sizeof(addId));
-//            ::ImGui::InputText("Path##add", addPath, sizeof(addPath));
-//            ::ImGui::Combo("Type##add", &addTypeIdx, typeOptions, 2);
-//
-//            std::vector<std::string> addSubmixNames;
-//            for (const auto& [n, _] : audio->GetAllSubmixes())
-//                addSubmixNames.push_back(n);
-//            addSubmixIdx = std::min(addSubmixIdx, static_cast<int>(addSubmixNames.size()) - 1);
-//            if (!addSubmixNames.empty())
-//            {
-//                if (::ImGui::BeginCombo("Submix##add", addSubmixNames[addSubmixIdx].c_str()))
-//                {
-//                    for (int i = 0; i < static_cast<int>(addSubmixNames.size()); i++)
-//                    {
-//                        bool sel = (addSubmixIdx == i);
-//                        if (::ImGui::Selectable(addSubmixNames[i].c_str(), sel)) addSubmixIdx = i;
-//                        if (sel) ::ImGui::SetItemDefaultFocus();
-//                    }
-//                    ::ImGui::EndCombo();
-//                }
-//            }
-//            ::ImGui::Checkbox("Overlap##add", &addOverlap);
-//
-//            bool canAdd = (addId[0] != '\0' && addPath[0] != '\0');
-//            if (!canAdd) ::ImGui::BeginDisabled();
-//            if (::ImGui::Button("Add##add"))
-//            {
-//                SoundDef def;
-//                def.id            = addId;
-//                def.filePath      = addPath;
-//                def.type          = typeOptions[addTypeIdx];
-//                def.submixName    = addSubmixNames.empty() ? def.type : addSubmixNames[addSubmixIdx];
-//                def.enableOverlap = addOverlap;
-//
-//                engine->soundDefs_[def.id] = def;
-//                auto inst = audio->Load(def.filePath);
-//                if (inst)
-//                    engine->loadedInstances_[def.id] = inst;
-//
-//                addId[0] = addPath[0] = '\0';
-//                ::ImGui::CloseCurrentPopup();
-//            }
-//            if (!canAdd) ::ImGui::EndDisabled();
-//
-//            ::ImGui::SameLine();
-//            if (::ImGui::Button("Cancel##add"))
-//                ::ImGui::CloseCurrentPopup();
-//
-//            ::ImGui::EndPopup();
-//        }
-//
-//        // --- JSON 保存 / リロード ---
-//        ::ImGui::SameLine();
-//        if (!engine->soundDataPath_.empty())
-//        {
-//            if (::ImGui::Button("Save JSON##sounds"))
-//            {
-//                json arr = json::array();
-//                for (const auto& [id, def] : engine->soundDefs_)
-//                    arr.push_back(def);
-//                JsonFileIO::Save(engine->soundDataPath_, "", json{{"sounds", arr}});
-//            }
-//            ::ImGui::SameLine();
-//            if (::ImGui::Button("Reload JSON##sounds"))
-//            {
-//                engine->soundDefs_.clear();
-//                engine->loadedInstances_.clear();
-//                engine->LoadSoundData(engine->soundDataPath_);
-//            }
-//            ::ImGui::SameLine();
-//            ::ImGui::TextDisabled("%s", engine->soundDataPath_.c_str());
-//        }
-//        else
-//        {
-//            static char newSoundPath[256] = {};
-//            ::ImGui::SetNextItemWidth(280.0f);
-//            ::ImGui::InputText("##newSoundPath", newSoundPath, sizeof(newSoundPath));
-//            ::ImGui::SameLine();
-//            if (::ImGui::Button("Load JSON##sounds") && newSoundPath[0] != '\0')
-//                engine->LoadSoundData(newSoundPath);
-//        }
-//
-//        ::ImGui::EndTabItem();
-//    }
-//
-//    // ================================================================
-//    // Tab 3: Events
-//    // ================================================================
-//    if (::ImGui::BeginTabItem("Events"))
-//    {
-//        // イベント一覧
-//        if (engine->eventDefs_.empty())
-//        {
-//            ::ImGui::TextDisabled("（イベントなし）");
-//        }
-//        else
-//        {
-//            std::string pendingDeleteEvent;
-//            for (const auto& [name, eventDef] : engine->eventDefs_)
-//            {
-//                bool open = ::ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_DefaultOpen);
-//                ::ImGui::SameLine();
-//                if (::ImGui::SmallButton(("Test##evt_" + name).c_str()))
-//                    engine->PostEvent(name);
-//                ::ImGui::SameLine();
-//                if (::ImGui::SmallButton(("x##evtdel_" + name).c_str()))
-//                    pendingDeleteEvent = name;
-//
-//                if (open)
-//                {
-//                    for (const auto& action : eventDef.actions)
-//                    {
-//                        const char* typeName = "?";
-//                        switch (action.type)
-//                        {
-//                            case SoundEventType::Play:      typeName = "Play";      break;
-//                            case SoundEventType::Stop:      typeName = "Stop";      break;
-//                            case SoundEventType::Pause:     typeName = "Pause";     break;
-//                            case SoundEventType::Resume:    typeName = "Resume";    break;
-//                            case SoundEventType::SetVolume: typeName = "SetVolume"; break;
-//                        }
-//                        ::ImGui::BulletText("%s: %s  vol=%.2f  loop=%s",
-//                            typeName, action.soundId.c_str(), action.volume,
-//                            action.loop ? "true" : "false");
-//                        for (const auto& fx : action.effects)
-//                            ::ImGui::BulletText("  fx: %s", fx.c_str());
-//                    }
-//                    ::ImGui::TreePop();
-//                }
-//            }
-//            if (!pendingDeleteEvent.empty())
-//                engine->eventDefs_.erase(pendingDeleteEvent);
-//        }
-//
-//        ::ImGui::Separator();
-//
-//        // --- イベント追加 ---
-//        static const char* kEventTypeNames[] = { "Play", "Stop", "Pause", "Resume", "SetVolume" };
-//        static const SoundEventType kEventTypes[] = {
-//            SoundEventType::Play, SoundEventType::Stop,
-//            SoundEventType::Pause, SoundEventType::Resume, SoundEventType::SetVolume
-//        };
-//
-//        static bool s_openAddEvent = false;
-//        if (::ImGui::Button("+ Add Event"))
-//        {
-//            s_openAddEvent = true;
-//            ::ImGui::OpenPopup("AddEventPopup");
-//        }
-//
-//        ::ImGui::SetNextWindowSize(ImVec2(480, 400), ImGuiCond_Appearing);
-//        if (::ImGui::BeginPopup("AddEventPopup"))
-//        {
-//            static char evtName[128] = {};
-//            static std::vector<SoundEventAction> evtActions;
-//
-//            // ボタンで開いた初回フレームにリセット（Escape等で閉じた残骸対策）
-//            if (s_openAddEvent)
-//            {
-//                evtName[0] = '\0';
-//                evtActions.clear();
-//                s_openAddEvent = false;
-//            }
-//
-//            ::ImGui::InputText("Event Name##evtadd", evtName, sizeof(evtName));
-//            ::ImGui::Separator();
-//            ::ImGui::Text("Actions (%zu)", evtActions.size());
-//
-//            int removeIdx = -1;
-//            for (int i = 0; i < static_cast<int>(evtActions.size()); i++)
-//            {
-//                SoundEventAction& a = evtActions[i];
-//                ::ImGui::PushID(i);
-//
-//                int typeIdx = static_cast<int>(a.type);
-//                ::ImGui::SetNextItemWidth(100.0f);
-//                if (::ImGui::Combo("##atype", &typeIdx, kEventTypeNames, 5))
-//                    a.type = kEventTypes[typeIdx];
-//
-//                ::ImGui::SameLine();
-//                ::ImGui::SetNextItemWidth(130.0f);
-//                if (::ImGui::BeginCombo("##asound", a.soundId.empty() ? "--" : a.soundId.c_str()))
-//                {
-//                    for (const auto& [sid, _] : engine->soundDefs_)
-//                    {
-//                        bool sel = (a.soundId == sid);
-//                        if (::ImGui::Selectable(sid.c_str(), sel)) a.soundId = sid;
-//                        if (sel) ::ImGui::SetItemDefaultFocus();
-//                    }
-//                    ::ImGui::EndCombo();
-//                }
-//
-//                if (a.type == SoundEventType::Play || a.type == SoundEventType::SetVolume)
-//                {
-//                    ::ImGui::SameLine();
-//                    ::ImGui::SetNextItemWidth(70.0f);
-//                    ::ImGui::SliderFloat("##avol", &a.volume, 0.0f, 1.5f, "%.2f");
-//                }
-//
-//                if (a.type == SoundEventType::Play)
-//                {
-//                    ::ImGui::SameLine();
-//                    ::ImGui::Checkbox("Loop##al", &a.loop);
-//                }
-//
-//                ::ImGui::SameLine();
-//                if (::ImGui::SmallButton("x##adel"))
-//                    removeIdx = i;
-//
-//                ::ImGui::PopID();
-//            }
-//            if (removeIdx >= 0)
-//                evtActions.erase(evtActions.begin() + removeIdx);
-//
-//            if (::ImGui::Button("+ Add Action##evtadd"))
-//            {
-//                SoundEventAction action{};
-//                action.type   = SoundEventType::Play;
-//                action.volume = 1.0f;
-//                evtActions.push_back(action);
-//            }
-//
-//            ::ImGui::Separator();
-//
-//            bool canAddEvt = (evtName[0] != '\0' && !evtActions.empty());
-//            if (!canAddEvt) ::ImGui::BeginDisabled();
-//            if (::ImGui::Button("Add Event##evtadd"))
-//            {
-//                SoundEventDef def;
-//                def.name    = evtName;
-//                def.actions = evtActions;
-//                engine->eventDefs_[def.name] = def;
-//
-//                evtName[0] = '\0';
-//                evtActions.clear();
-//                ::ImGui::CloseCurrentPopup();
-//            }
-//            if (!canAddEvt) ::ImGui::EndDisabled();
-//
-//            ::ImGui::SameLine();
-//            if (::ImGui::Button("Cancel##evtadd"))
-//            {
-//                evtName[0] = '\0';
-//                evtActions.clear();
-//                ::ImGui::CloseCurrentPopup();
-//            }
-//
-//            ::ImGui::EndPopup();
-//        }
-//
-//        // --- JSON 保存 / リロード ---
-//        ::ImGui::SameLine();
-//        if (!engine->eventDataPath_.empty())
-//        {
-//            if (::ImGui::Button("Save JSON##events"))
-//            {
-//                json arr = json::array();
-//                for (const auto& [name, def] : engine->eventDefs_)
-//                    arr.push_back(def);
-//                JsonFileIO::Save(engine->eventDataPath_, "", json{{"events", arr}});
-//            }
-//            ::ImGui::SameLine();
-//            if (::ImGui::Button("Reload JSON##events"))
-//            {
-//                engine->eventDefs_.clear();
-//                engine->LoadEventData(engine->eventDataPath_);
-//            }
-//            ::ImGui::SameLine();
-//            ::ImGui::TextDisabled("%s", engine->eventDataPath_.c_str());
-//        }
-//        else
-//        {
-//            ::ImGui::TextDisabled("（LoadEventData() がまだ呼ばれていません）");
-//        }
-//
-//        ::ImGui::EndTabItem();
-//    }
-//
-//    // ================================================================
-//    // Tab 4: Now Playing
-//    // ================================================================
-//    if (::ImGui::BeginTabItem("Now Playing"))
-//    {
-//        ::ImGui::Text("Total: %zu", engine->playingSounds_.size());
-//        ::ImGui::SameLine();
-//        if (::ImGui::Button("Stop All##np"))
-//            engine->StopAll();
-//
-//        if (::ImGui::BeginTable("NowPlayingTable", 5,
-//            ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY,
-//            ImVec2(0, 300)))
-//        {
-//            ::ImGui::TableSetupScrollFreeze(0, 1);
-//            ::ImGui::TableSetupColumn("Handle",   ImGuiTableColumnFlags_WidthFixed,  55.0f);
-//            ::ImGui::TableSetupColumn("SoundID",  ImGuiTableColumnFlags_WidthStretch);
-//            ::ImGui::TableSetupColumn("Submix",   ImGuiTableColumnFlags_WidthFixed,  80.0f);
-//            ::ImGui::TableSetupColumn("Progress", ImGuiTableColumnFlags_WidthStretch);
-//            ::ImGui::TableSetupColumn("Stop",     ImGuiTableColumnFlags_WidthFixed,  45.0f);
-//            ::ImGui::TableHeadersRow();
-//
-//            std::vector<SoundHandle> toStop;
-//            for (const auto& [handle, ps] : engine->playingSounds_)
-//            {
-//                ::ImGui::TableNextRow();
-//
-//                ::ImGui::TableSetColumnIndex(0);
-//                ::ImGui::Text("%u", handle);
-//
-//                ::ImGui::TableSetColumnIndex(1);
-//                ::ImGui::TextUnformatted(ps.soundId.c_str());
-//
-//                ::ImGui::TableSetColumnIndex(2);
-//                {
-//                    auto defIt = engine->soundDefs_.find(ps.soundId);
-//                    if (defIt != engine->soundDefs_.end())
-//                    {
-//                        const SoundDef& d = defIt->second;
-//                        const std::string& bus = d.submixName.empty() ? d.type : d.submixName;
-//                        ::ImGui::TextUnformatted(bus.c_str());
-//                    }
-//                }
-//
-//                ::ImGui::TableSetColumnIndex(3);
-//                {
-//                    float elapsed  = engine->GetElapsedTime(handle);
-//                    float duration = engine->GetDuration(ps.soundId);
-//                    char  overlay[32];
-//                    float frac = 0.0f;
-//                    if (ps.loop || duration <= 0.0f)
-//                    {
-//                        frac = (duration > 0.0f)
-//                            ? std::fmod(elapsed, duration) / duration : 0.0f;
-//                        std::snprintf(overlay, sizeof(overlay), "%.1fs / loop", elapsed);
-//                    }
-//                    else
-//                    {
-//                        frac = (duration > 0.0f)
-//                            ? std::min(elapsed / duration, 1.0f) : 0.0f;
-//                        std::snprintf(overlay, sizeof(overlay), "%.1fs/%.1fs", elapsed, duration);
-//                    }
-//                    ::ImGui::ProgressBar(frac, ImVec2(-1.0f, 0.0f), overlay);
-//                }
-//
-//                ::ImGui::TableSetColumnIndex(4);
-//                {
-//                    std::string stopId = "x##stp_" + std::to_string(handle);
-//                    if (::ImGui::SmallButton(stopId.c_str()))
-//                        toStop.push_back(handle);
-//                }
-//            }
-//            ::ImGui::EndTable();
-//
-//            for (auto h : toStop)
-//                engine->Stop(h);
-//        }
-//
-//        ::ImGui::EndTabItem();
-//    }
-//
-//    // ================================================================
-//    // Tab 5: Tester
-//    // ================================================================
-//    if (::ImGui::BeginTabItem("Tester"))
-//    {
-//        static int         testerSelectedIdx = 0;
-//        static float       testerVolume      = 1.0f;
-//        static bool        testerLoop        = false;
-//        static float       testerStart       = 0.0f;
-//        static SoundHandle testerLastHandle  = kInvalidHandle;
-//
-//        std::vector<std::string> ids;
-//        for (const auto& [id, _] : engine->soundDefs_)
-//            ids.push_back(id);
-//
-//        if (ids.empty())
-//        {
-//            ::ImGui::TextDisabled("（サウンドが読み込まれていません）");
-//        }
-//        else
-//        {
-//            testerSelectedIdx = std::min(testerSelectedIdx, static_cast<int>(ids.size()) - 1);
-//
-//            ::ImGui::SetNextItemWidth(220.0f);
-//            if (::ImGui::BeginCombo("Sound##tst", ids[testerSelectedIdx].c_str()))
-//            {
-//                for (int i = 0; i < static_cast<int>(ids.size()); i++)
-//                {
-//                    bool sel = (testerSelectedIdx == i);
-//                    if (::ImGui::Selectable(ids[i].c_str(), sel))
-//                        testerSelectedIdx = i;
-//                    if (sel) ::ImGui::SetItemDefaultFocus();
-//                }
-//                ::ImGui::EndCombo();
-//            }
-//
-//            ::ImGui::SliderFloat("Volume##tst",  &testerVolume, 0.0f, 1.5f, "%.2f");
-//            ::ImGui::Checkbox("Loop##tst",        &testerLoop);
-//            ::ImGui::InputFloat("Start (s)##tst", &testerStart, 0.1f, 1.0f, "%.2f");
-//            testerStart = std::max(0.0f, testerStart);
-//
-//            if (::ImGui::Button("Play##tst"))
-//                testerLastHandle = engine->Play(
-//                    ids[testerSelectedIdx], testerVolume, testerLoop, testerStart);
-//
-//            ::ImGui::SameLine();
-//            if (::ImGui::Button("Stop Last##tst") && testerLastHandle != kInvalidHandle)
-//            {
-//                engine->Stop(testerLastHandle);
-//                testerLastHandle = kInvalidHandle;
-//            }
-//
-//            ::ImGui::SameLine();
-//            if (::ImGui::Button("Stop All##tst"))
-//                engine->StopAll();
-//
-//            if (testerLastHandle != kInvalidHandle)
-//            {
-//                ::ImGui::Text("Handle: %u  Playing: %s",
-//                    testerLastHandle,
-//                    engine->IsPlaying(testerLastHandle) ? "yes" : "no");
-//            }
-//        }
-//
-//        ::ImGui::EndTabItem();
-//    }
-//
-//    ::ImGui::EndTabBar();
-//    ::ImGui::End();
+    //    if (!::ImGui::Begin("SoundEngine", _open))
+    //    {
+    //        ::ImGui::End();
+    //        return;
+    //    }
+    //
+    //    SoundEngine* engine = GetInstance();
+    //    AudioSystem* audio  = AudioSystem::GetInstance();
+    //
+    //    if (!::ImGui::BeginTabBar("SoundEngineTabs"))
+    //    {
+    //        ::ImGui::End();
+    //        return;
+    //    }
+    //
+    //    // ================================================================
+    //    // Tab 1: Mixer
+    //    // ================================================================
+    //    if (::ImGui::BeginTabItem("Mixer"))
+    //    {
+    //        float master = audio->GetMasterVolume();
+    //        if (::ImGui::SliderFloat("Master", &master, 0.0f, 1.5f, "%.2f"))
+    //            audio->SetMasterVolume(master);
+    //
+    //        ::ImGui::Separator();
+    //
+    //        static std::unordered_map<std::string, float> preMuteVolumes;
+    //        std::string pendingRemove;
+    //
+    //        for (const auto& [name, sv] : audio->GetAllSubmixes())
+    //        {
+    //            float vol = sv->GetVolume();
+    //            ::ImGui::Text("%-12s", name.c_str());
+    //            ::ImGui::SameLine();
+    //            std::string sliderId = "##vol_" + name;
+    //            ::ImGui::SetNextItemWidth(180.0f);
+    //            if (::ImGui::SliderFloat(sliderId.c_str(), &vol, 0.0f, 1.5f, "%.2f"))
+    //                sv->SetVolume(vol);
+    //
+    //            ::ImGui::SameLine();
+    //            bool isMuted = (sv->GetVolume() < 0.001f);
+    //            std::string muteId = (isMuted ? "Unmute##mu_" : "Mute##mu_") + name;
+    //            if (::ImGui::SmallButton(muteId.c_str()))
+    //            {
+    //                if (isMuted)
+    //                {
+    //                    float prev = preMuteVolumes.count(name) ? preMuteVolumes[name] : 1.0f;
+    //                    sv->SetVolume(prev);
+    //                }
+    //                else
+    //                {
+    //                    preMuteVolumes[name] = sv->GetVolume();
+    //                    sv->SetVolume(0.0f);
+    //                }
+    //            }
+    //
+    //            if (name != "BGM" && name != "SE")
+    //            {
+    //                ::ImGui::SameLine();
+    //                std::string delId = "x##del_" + name;
+    //                if (::ImGui::SmallButton(delId.c_str()))
+    //                    pendingRemove = name;
+    //            }
+    //        }
+    //        if (!pendingRemove.empty())
+    //            audio->RemoveSubmix(pendingRemove);
+    //
+    //        ::ImGui::Separator();
+    //
+    //        if (::ImGui::Button("+ Add Submix"))
+    //            ::ImGui::OpenPopup("AddSubmixPopup");
+    //
+    //        if (::ImGui::BeginPopup("AddSubmixPopup"))
+    //        {
+    //            static char newName[64] = {};
+    //            static int  newChannels = 2;
+    //            ::ImGui::InputText("Name",     newName,     sizeof(newName));
+    //            ::ImGui::InputInt ("Channels", &newChannels);
+    //            newChannels = std::max(1, newChannels);
+    //
+    //            if (::ImGui::Button("OK") && newName[0] != '\0')
+    //            {
+    //                audio->AddSubmix(newName, static_cast<uint32_t>(newChannels), 48000.0f, 1);
+    //                newName[0] = '\0';
+    //                ::ImGui::CloseCurrentPopup();
+    //            }
+    //            ::ImGui::SameLine();
+    //            if (::ImGui::Button("Cancel"))
+    //                ::ImGui::CloseCurrentPopup();
+    //            ::ImGui::EndPopup();
+    //        }
+    //
+    //        ::ImGui::SameLine();
+    //        if (::ImGui::Button("Save JSON##mix"))
+    //            audio->SaveSubmixConfig(kAudioConfigPath);
+    //        ::ImGui::SameLine();
+    //        if (::ImGui::Button("Load JSON##mix"))
+    //            audio->LoadSubmixConfig(kAudioConfigPath);
+    //
+    //        ::ImGui::EndTabItem();
+    //    }
+    //
+    //    // ================================================================
+    //    // Tab 2: Sounds
+    //    // ================================================================
+    //    if (::ImGui::BeginTabItem("Sounds"))
+    //    {
+    //        static char soundFilter[128] = {};
+    //        static int  submixFilterIdx  = 0;
+    //
+    //        ::ImGui::InputText("Filter##sf", soundFilter, sizeof(soundFilter));
+    //
+    //        std::vector<std::string> submixNames = {"All"};
+    //        for (const auto& [n, _] : audio->GetAllSubmixes())
+    //            submixNames.push_back(n);
+    //        submixFilterIdx = std::min(submixFilterIdx, static_cast<int>(submixNames.size()) - 1);
+    //
+    //        ::ImGui::SameLine();
+    //        ::ImGui::SetNextItemWidth(120.0f);
+    //        if (::ImGui::BeginCombo("Submix##sf", submixNames[submixFilterIdx].c_str()))
+    //        {
+    //            for (int i = 0; i < static_cast<int>(submixNames.size()); i++)
+    //            {
+    //                bool sel = (submixFilterIdx == i);
+    //                if (::ImGui::Selectable(submixNames[i].c_str(), sel))
+    //                    submixFilterIdx = i;
+    //                if (sel) ::ImGui::SetItemDefaultFocus();
+    //            }
+    //            ::ImGui::EndCombo();
+    //        }
+    //
+    //        std::vector<const char*> busOptions;
+    //        for (int i = 1; i < static_cast<int>(submixNames.size()); i++)
+    //            busOptions.push_back(submixNames[i].c_str());
+    //
+    //        if (::ImGui::BeginTable("SoundsTable", 6,
+    //            ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY,
+    //            ImVec2(0, 280)))
+    //        {
+    //            ::ImGui::TableSetupScrollFreeze(0, 1);
+    //            ::ImGui::TableSetupColumn("ID",      ImGuiTableColumnFlags_WidthStretch);
+    //            ::ImGui::TableSetupColumn("Path",    ImGuiTableColumnFlags_WidthStretch);
+    //            ::ImGui::TableSetupColumn("Type",    ImGuiTableColumnFlags_WidthFixed, 50.0f);
+    //            ::ImGui::TableSetupColumn("Submix",  ImGuiTableColumnFlags_WidthFixed, 110.0f);
+    //            ::ImGui::TableSetupColumn("Overlap", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+    //            ::ImGui::TableSetupColumn("Loaded",  ImGuiTableColumnFlags_WidthFixed, 50.0f);
+    //            ::ImGui::TableHeadersRow();
+    //
+    //            for (auto& [id, def] : engine->soundDefs_)
+    //            {
+    //                const std::string& bus = def.submixName.empty() ? def.type : def.submixName;
+    //
+    //                if (soundFilter[0] != '\0' &&
+    //                    id.find(soundFilter) == std::string::npos &&
+    //                    def.filePath.find(soundFilter) == std::string::npos)
+    //                    continue;
+    //
+    //                if (submixFilterIdx > 0 && bus != submixNames[submixFilterIdx])
+    //                    continue;
+    //
+    //                ::ImGui::TableNextRow();
+    //                ::ImGui::TableSetColumnIndex(0); ::ImGui::TextUnformatted(id.c_str());
+    //                ::ImGui::TableSetColumnIndex(1); ::ImGui::TextUnformatted(def.filePath.c_str());
+    //                ::ImGui::TableSetColumnIndex(2); ::ImGui::TextUnformatted(def.type.c_str());
+    //
+    //                ::ImGui::TableSetColumnIndex(3);
+    //                int curIdx = 0;
+    //                for (int i = 0; i < static_cast<int>(busOptions.size()); i++)
+    //                    if (bus == busOptions[i]) { curIdx = i; break; }
+    //                ::ImGui::SetNextItemWidth(-1.0f);
+    //                std::string comboId = "##sub_" + id;
+    //                if (!busOptions.empty() &&
+    //                    ::ImGui::BeginCombo(comboId.c_str(), busOptions[curIdx]))
+    //                {
+    //                    for (int i = 0; i < static_cast<int>(busOptions.size()); i++)
+    //                    {
+    //                        bool sel = (curIdx == i);
+    //                        if (::ImGui::Selectable(busOptions[i], sel))
+    //                            def.submixName = busOptions[i];
+    //                        if (sel) ::ImGui::SetItemDefaultFocus();
+    //                    }
+    //                    ::ImGui::EndCombo();
+    //                }
+    //
+    //                ::ImGui::TableSetColumnIndex(4);
+    //                std::string cbId = "##ovl_" + id;
+    //                ::ImGui::Checkbox(cbId.c_str(), &def.enableOverlap);
+    //
+    //                ::ImGui::TableSetColumnIndex(5);
+    //                bool loaded = engine->loadedInstances_.count(id) > 0;
+    //                ::ImGui::TextUnformatted(loaded ? "OK" : "--");
+    //            }
+    //            ::ImGui::EndTable();
+    //        }
+    //
+    //        ::ImGui::Separator();
+    //
+    //        // --- 個別サウンド追加 ---
+    //        static bool s_openAddSound = false;
+    //        if (::ImGui::Button("+ Add Sound"))
+    //        {
+    //            s_openAddSound = true;
+    //            ::ImGui::OpenPopup("AddSoundPopup");
+    //        }
+    //
+    //        if (::ImGui::BeginPopup("AddSoundPopup"))
+    //        {
+    //            static char addId[128]   = {};
+    //            static char addPath[256] = {};
+    //            static int  addTypeIdx   = 1; // 0=BGM, 1=SE
+    //            static int  addSubmixIdx = 0;
+    //            static bool addOverlap   = true;
+    //
+    //            // ボタンで開いた初回フレームにリセット（Escape等で閉じた残骸対策）
+    //            if (s_openAddSound)
+    //            {
+    //                addId[0] = addPath[0] = '\0';
+    //                addTypeIdx = 1; addSubmixIdx = 0; addOverlap = true;
+    //                s_openAddSound = false;
+    //            }
+    //
+    //            const char* typeOptions[] = { "BGM", "SE" };
+    //            ::ImGui::InputText("ID##add",   addId,   sizeof(addId));
+    //            ::ImGui::InputText("Path##add", addPath, sizeof(addPath));
+    //            ::ImGui::Combo("Type##add", &addTypeIdx, typeOptions, 2);
+    //
+    //            std::vector<std::string> addSubmixNames;
+    //            for (const auto& [n, _] : audio->GetAllSubmixes())
+    //                addSubmixNames.push_back(n);
+    //            addSubmixIdx = std::min(addSubmixIdx, static_cast<int>(addSubmixNames.size()) - 1);
+    //            if (!addSubmixNames.empty())
+    //            {
+    //                if (::ImGui::BeginCombo("Submix##add", addSubmixNames[addSubmixIdx].c_str()))
+    //                {
+    //                    for (int i = 0; i < static_cast<int>(addSubmixNames.size()); i++)
+    //                    {
+    //                        bool sel = (addSubmixIdx == i);
+    //                        if (::ImGui::Selectable(addSubmixNames[i].c_str(), sel)) addSubmixIdx = i;
+    //                        if (sel) ::ImGui::SetItemDefaultFocus();
+    //                    }
+    //                    ::ImGui::EndCombo();
+    //                }
+    //            }
+    //            ::ImGui::Checkbox("Overlap##add", &addOverlap);
+    //
+    //            bool canAdd = (addId[0] != '\0' && addPath[0] != '\0');
+    //            if (!canAdd) ::ImGui::BeginDisabled();
+    //            if (::ImGui::Button("Add##add"))
+    //            {
+    //                SoundDef def;
+    //                def.id            = addId;
+    //                def.filePath      = addPath;
+    //                def.type          = typeOptions[addTypeIdx];
+    //                def.submixName    = addSubmixNames.empty() ? def.type : addSubmixNames[addSubmixIdx];
+    //                def.enableOverlap = addOverlap;
+    //
+    //                engine->soundDefs_[def.id] = def;
+    //                auto inst = audio->Load(def.filePath);
+    //                if (inst)
+    //                    engine->loadedInstances_[def.id] = inst;
+    //
+    //                addId[0] = addPath[0] = '\0';
+    //                ::ImGui::CloseCurrentPopup();
+    //            }
+    //            if (!canAdd) ::ImGui::EndDisabled();
+    //
+    //            ::ImGui::SameLine();
+    //            if (::ImGui::Button("Cancel##add"))
+    //                ::ImGui::CloseCurrentPopup();
+    //
+    //            ::ImGui::EndPopup();
+    //        }
+    //
+    //        // --- JSON 保存 / リロード ---
+    //        ::ImGui::SameLine();
+    //        if (!engine->soundDataPath_.empty())
+    //        {
+    //            if (::ImGui::Button("Save JSON##sounds"))
+    //            {
+    //                json arr = json::array();
+    //                for (const auto& [id, def] : engine->soundDefs_)
+    //                    arr.push_back(def);
+    //                JsonFileIO::Save(engine->soundDataPath_, "", json{{"sounds", arr}});
+    //            }
+    //            ::ImGui::SameLine();
+    //            if (::ImGui::Button("Reload JSON##sounds"))
+    //            {
+    //                engine->soundDefs_.clear();
+    //                engine->loadedInstances_.clear();
+    //                engine->LoadSoundData(engine->soundDataPath_);
+    //            }
+    //            ::ImGui::SameLine();
+    //            ::ImGui::TextDisabled("%s", engine->soundDataPath_.c_str());
+    //        }
+    //        else
+    //        {
+    //            static char newSoundPath[256] = {};
+    //            ::ImGui::SetNextItemWidth(280.0f);
+    //            ::ImGui::InputText("##newSoundPath", newSoundPath, sizeof(newSoundPath));
+    //            ::ImGui::SameLine();
+    //            if (::ImGui::Button("Load JSON##sounds") && newSoundPath[0] != '\0')
+    //                engine->LoadSoundData(newSoundPath);
+    //        }
+    //
+    //        ::ImGui::EndTabItem();
+    //    }
+    //
+    //    // ================================================================
+    //    // Tab 3: Events
+    //    // ================================================================
+    //    if (::ImGui::BeginTabItem("Events"))
+    //    {
+    //        // イベント一覧
+    //        if (engine->eventDefs_.empty())
+    //        {
+    //            ::ImGui::TextDisabled("（イベントなし）");
+    //        }
+    //        else
+    //        {
+    //            std::string pendingDeleteEvent;
+    //            for (const auto& [name, eventDef] : engine->eventDefs_)
+    //            {
+    //                bool open = ::ImGui::TreeNodeEx(name.c_str(), ImGuiTreeNodeFlags_DefaultOpen);
+    //                ::ImGui::SameLine();
+    //                if (::ImGui::SmallButton(("Test##evt_" + name).c_str()))
+    //                    engine->PostEvent(name);
+    //                ::ImGui::SameLine();
+    //                if (::ImGui::SmallButton(("x##evtdel_" + name).c_str()))
+    //                    pendingDeleteEvent = name;
+    //
+    //                if (open)
+    //                {
+    //                    for (const auto& action : eventDef.actions)
+    //                    {
+    //                        const char* typeName = "?";
+    //                        switch (action.type)
+    //                        {
+    //                            case SoundEventType::Play:      typeName = "Play";      break;
+    //                            case SoundEventType::Stop:      typeName = "Stop";      break;
+    //                            case SoundEventType::Pause:     typeName = "Pause";     break;
+    //                            case SoundEventType::Resume:    typeName = "Resume";    break;
+    //                            case SoundEventType::SetVolume: typeName = "SetVolume"; break;
+    //                        }
+    //                        ::ImGui::BulletText("%s: %s  vol=%.2f  loop=%s",
+    //                            typeName, action.soundId.c_str(), action.volume,
+    //                            action.loop ? "true" : "false");
+    //                        for (const auto& fx : action.effects)
+    //                            ::ImGui::BulletText("  fx: %s", fx.c_str());
+    //                    }
+    //                    ::ImGui::TreePop();
+    //                }
+    //            }
+    //            if (!pendingDeleteEvent.empty())
+    //                engine->eventDefs_.erase(pendingDeleteEvent);
+    //        }
+    //
+    //        ::ImGui::Separator();
+    //
+    //        // --- イベント追加 ---
+    //        static const char* kEventTypeNames[] = { "Play", "Stop", "Pause", "Resume", "SetVolume" };
+    //        static const SoundEventType kEventTypes[] = {
+    //            SoundEventType::Play, SoundEventType::Stop,
+    //            SoundEventType::Pause, SoundEventType::Resume, SoundEventType::SetVolume
+    //        };
+    //
+    //        static bool s_openAddEvent = false;
+    //        if (::ImGui::Button("+ Add Event"))
+    //        {
+    //            s_openAddEvent = true;
+    //            ::ImGui::OpenPopup("AddEventPopup");
+    //        }
+    //
+    //        ::ImGui::SetNextWindowSize(ImVec2(480, 400), ImGuiCond_Appearing);
+    //        if (::ImGui::BeginPopup("AddEventPopup"))
+    //        {
+    //            static char evtName[128] = {};
+    //            static std::vector<SoundEventAction> evtActions;
+    //
+    //            // ボタンで開いた初回フレームにリセット（Escape等で閉じた残骸対策）
+    //            if (s_openAddEvent)
+    //            {
+    //                evtName[0] = '\0';
+    //                evtActions.clear();
+    //                s_openAddEvent = false;
+    //            }
+    //
+    //            ::ImGui::InputText("Event Name##evtadd", evtName, sizeof(evtName));
+    //            ::ImGui::Separator();
+    //            ::ImGui::Text("Actions (%zu)", evtActions.size());
+    //
+    //            int removeIdx = -1;
+    //            for (int i = 0; i < static_cast<int>(evtActions.size()); i++)
+    //            {
+    //                SoundEventAction& a = evtActions[i];
+    //                ::ImGui::PushID(i);
+    //
+    //                int typeIdx = static_cast<int>(a.type);
+    //                ::ImGui::SetNextItemWidth(100.0f);
+    //                if (::ImGui::Combo("##atype", &typeIdx, kEventTypeNames, 5))
+    //                    a.type = kEventTypes[typeIdx];
+    //
+    //                ::ImGui::SameLine();
+    //                ::ImGui::SetNextItemWidth(130.0f);
+    //                if (::ImGui::BeginCombo("##asound", a.soundId.empty() ? "--" : a.soundId.c_str()))
+    //                {
+    //                    for (const auto& [sid, _] : engine->soundDefs_)
+    //                    {
+    //                        bool sel = (a.soundId == sid);
+    //                        if (::ImGui::Selectable(sid.c_str(), sel)) a.soundId = sid;
+    //                        if (sel) ::ImGui::SetItemDefaultFocus();
+    //                    }
+    //                    ::ImGui::EndCombo();
+    //                }
+    //
+    //                if (a.type == SoundEventType::Play || a.type == SoundEventType::SetVolume)
+    //                {
+    //                    ::ImGui::SameLine();
+    //                    ::ImGui::SetNextItemWidth(70.0f);
+    //                    ::ImGui::SliderFloat("##avol", &a.volume, 0.0f, 1.5f, "%.2f");
+    //                }
+    //
+    //                if (a.type == SoundEventType::Play)
+    //                {
+    //                    ::ImGui::SameLine();
+    //                    ::ImGui::Checkbox("Loop##al", &a.loop);
+    //                }
+    //
+    //                ::ImGui::SameLine();
+    //                if (::ImGui::SmallButton("x##adel"))
+    //                    removeIdx = i;
+    //
+    //                ::ImGui::PopID();
+    //            }
+    //            if (removeIdx >= 0)
+    //                evtActions.erase(evtActions.begin() + removeIdx);
+    //
+    //            if (::ImGui::Button("+ Add Action##evtadd"))
+    //            {
+    //                SoundEventAction action{};
+    //                action.type   = SoundEventType::Play;
+    //                action.volume = 1.0f;
+    //                evtActions.push_back(action);
+    //            }
+    //
+    //            ::ImGui::Separator();
+    //
+    //            bool canAddEvt = (evtName[0] != '\0' && !evtActions.empty());
+    //            if (!canAddEvt) ::ImGui::BeginDisabled();
+    //            if (::ImGui::Button("Add Event##evtadd"))
+    //            {
+    //                SoundEventDef def;
+    //                def.name    = evtName;
+    //                def.actions = evtActions;
+    //                engine->eventDefs_[def.name] = def;
+    //
+    //                evtName[0] = '\0';
+    //                evtActions.clear();
+    //                ::ImGui::CloseCurrentPopup();
+    //            }
+    //            if (!canAddEvt) ::ImGui::EndDisabled();
+    //
+    //            ::ImGui::SameLine();
+    //            if (::ImGui::Button("Cancel##evtadd"))
+    //            {
+    //                evtName[0] = '\0';
+    //                evtActions.clear();
+    //                ::ImGui::CloseCurrentPopup();
+    //            }
+    //
+    //            ::ImGui::EndPopup();
+    //        }
+    //
+    //        // --- JSON 保存 / リロード ---
+    //        ::ImGui::SameLine();
+    //        if (!engine->eventDataPath_.empty())
+    //        {
+    //            if (::ImGui::Button("Save JSON##events"))
+    //            {
+    //                json arr = json::array();
+    //                for (const auto& [name, def] : engine->eventDefs_)
+    //                    arr.push_back(def);
+    //                JsonFileIO::Save(engine->eventDataPath_, "", json{{"events", arr}});
+    //            }
+    //            ::ImGui::SameLine();
+    //            if (::ImGui::Button("Reload JSON##events"))
+    //            {
+    //                engine->eventDefs_.clear();
+    //                engine->LoadEventData(engine->eventDataPath_);
+    //            }
+    //            ::ImGui::SameLine();
+    //            ::ImGui::TextDisabled("%s", engine->eventDataPath_.c_str());
+    //        }
+    //        else
+    //        {
+    //            ::ImGui::TextDisabled("（LoadEventData() がまだ呼ばれていません）");
+    //        }
+    //
+    //        ::ImGui::EndTabItem();
+    //    }
+    //
+    //    // ================================================================
+    //    // Tab 4: Now Playing
+    //    // ================================================================
+    //    if (::ImGui::BeginTabItem("Now Playing"))
+    //    {
+    //        ::ImGui::Text("Total: %zu", engine->playingSounds_.size());
+    //        ::ImGui::SameLine();
+    //        if (::ImGui::Button("Stop All##np"))
+    //            engine->StopAll();
+    //
+    //        if (::ImGui::BeginTable("NowPlayingTable", 5,
+    //            ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY,
+    //            ImVec2(0, 300)))
+    //        {
+    //            ::ImGui::TableSetupScrollFreeze(0, 1);
+    //            ::ImGui::TableSetupColumn("Handle",   ImGuiTableColumnFlags_WidthFixed,  55.0f);
+    //            ::ImGui::TableSetupColumn("SoundID",  ImGuiTableColumnFlags_WidthStretch);
+    //            ::ImGui::TableSetupColumn("Submix",   ImGuiTableColumnFlags_WidthFixed,  80.0f);
+    //            ::ImGui::TableSetupColumn("Progress", ImGuiTableColumnFlags_WidthStretch);
+    //            ::ImGui::TableSetupColumn("Stop",     ImGuiTableColumnFlags_WidthFixed,  45.0f);
+    //            ::ImGui::TableHeadersRow();
+    //
+    //            std::vector<SoundHandle> toStop;
+    //            for (const auto& [handle, ps] : engine->playingSounds_)
+    //            {
+    //                ::ImGui::TableNextRow();
+    //
+    //                ::ImGui::TableSetColumnIndex(0);
+    //                ::ImGui::Text("%u", handle);
+    //
+    //                ::ImGui::TableSetColumnIndex(1);
+    //                ::ImGui::TextUnformatted(ps.soundId.c_str());
+    //
+    //                ::ImGui::TableSetColumnIndex(2);
+    //                {
+    //                    auto defIt = engine->soundDefs_.find(ps.soundId);
+    //                    if (defIt != engine->soundDefs_.end())
+    //                    {
+    //                        const SoundDef& d = defIt->second;
+    //                        const std::string& bus = d.submixName.empty() ? d.type : d.submixName;
+    //                        ::ImGui::TextUnformatted(bus.c_str());
+    //                    }
+    //                }
+    //
+    //                ::ImGui::TableSetColumnIndex(3);
+    //                {
+    //                    float elapsed  = engine->GetElapsedTime(handle);
+    //                    float duration = engine->GetDuration(ps.soundId);
+    //                    char  overlay[32];
+    //                    float frac = 0.0f;
+    //                    if (ps.loop || duration <= 0.0f)
+    //                    {
+    //                        frac = (duration > 0.0f)
+    //                            ? std::fmod(elapsed, duration) / duration : 0.0f;
+    //                        std::snprintf(overlay, sizeof(overlay), "%.1fs / loop", elapsed);
+    //                    }
+    //                    else
+    //                    {
+    //                        frac = (duration > 0.0f)
+    //                            ? std::min(elapsed / duration, 1.0f) : 0.0f;
+    //                        std::snprintf(overlay, sizeof(overlay), "%.1fs/%.1fs", elapsed, duration);
+    //                    }
+    //                    ::ImGui::ProgressBar(frac, ImVec2(-1.0f, 0.0f), overlay);
+    //                }
+    //
+    //                ::ImGui::TableSetColumnIndex(4);
+    //                {
+    //                    std::string stopId = "x##stp_" + std::to_string(handle);
+    //                    if (::ImGui::SmallButton(stopId.c_str()))
+    //                        toStop.push_back(handle);
+    //                }
+    //            }
+    //            ::ImGui::EndTable();
+    //
+    //            for (auto h : toStop)
+    //                engine->Stop(h);
+    //        }
+    //
+    //        ::ImGui::EndTabItem();
+    //    }
+    //
+    //    // ================================================================
+    //    // Tab 5: Tester
+    //    // ================================================================
+    //    if (::ImGui::BeginTabItem("Tester"))
+    //    {
+    //        static int         testerSelectedIdx = 0;
+    //        static float       testerVolume      = 1.0f;
+    //        static bool        testerLoop        = false;
+    //        static float       testerStart       = 0.0f;
+    //        static SoundHandle testerLastHandle  = kInvalidHandle;
+    //
+    //        std::vector<std::string> ids;
+    //        for (const auto& [id, _] : engine->soundDefs_)
+    //            ids.push_back(id);
+    //
+    //        if (ids.empty())
+    //        {
+    //            ::ImGui::TextDisabled("（サウンドが読み込まれていません）");
+    //        }
+    //        else
+    //        {
+    //            testerSelectedIdx = std::min(testerSelectedIdx, static_cast<int>(ids.size()) - 1);
+    //
+    //            ::ImGui::SetNextItemWidth(220.0f);
+    //            if (::ImGui::BeginCombo("Sound##tst", ids[testerSelectedIdx].c_str()))
+    //            {
+    //                for (int i = 0; i < static_cast<int>(ids.size()); i++)
+    //                {
+    //                    bool sel = (testerSelectedIdx == i);
+    //                    if (::ImGui::Selectable(ids[i].c_str(), sel))
+    //                        testerSelectedIdx = i;
+    //                    if (sel) ::ImGui::SetItemDefaultFocus();
+    //                }
+    //                ::ImGui::EndCombo();
+    //            }
+    //
+    //            ::ImGui::SliderFloat("Volume##tst",  &testerVolume, 0.0f, 1.5f, "%.2f");
+    //            ::ImGui::Checkbox("Loop##tst",        &testerLoop);
+    //            ::ImGui::InputFloat("Start (s)##tst", &testerStart, 0.1f, 1.0f, "%.2f");
+    //            testerStart = std::max(0.0f, testerStart);
+    //
+    //            if (::ImGui::Button("Play##tst"))
+    //                testerLastHandle = engine->Play(
+    //                    ids[testerSelectedIdx], testerVolume, testerLoop, testerStart);
+    //
+    //            ::ImGui::SameLine();
+    //            if (::ImGui::Button("Stop Last##tst") && testerLastHandle != kInvalidHandle)
+    //            {
+    //                engine->Stop(testerLastHandle);
+    //                testerLastHandle = kInvalidHandle;
+    //            }
+    //
+    //            ::ImGui::SameLine();
+    //            if (::ImGui::Button("Stop All##tst"))
+    //                engine->StopAll();
+    //
+    //            if (testerLastHandle != kInvalidHandle)
+    //            {
+    //                ::ImGui::Text("Handle: %u  Playing: %s",
+    //                    testerLastHandle,
+    //                    engine->IsPlaying(testerLastHandle) ? "yes" : "no");
+    //            }
+    //        }
+    //
+    //        ::ImGui::EndTabItem();
+    //    }
+    //
+    //    ::ImGui::EndTabBar();
+    //    ::ImGui::End();
 }
 
 #endif // _DEBUG

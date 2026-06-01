@@ -76,6 +76,7 @@ public:
     void Pause(SoundHandle handle);
     void Resume(SoundHandle handle);
     void SetVolume(SoundHandle handle, float volume);
+    void SetSpeed(SoundHandle handle, float speed);
 
     bool  IsPlaying(SoundHandle handle) const;
     float GetElapsedTime(SoundHandle handle) const;
