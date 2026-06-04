@@ -39,7 +39,8 @@ HRESULT SubmixVoice::Initialize(IXAudio2* xAudio2, uint32_t inputChannels, float
 
     effectChain_.AttachToVoice(submixVoice_);
     submixVoice_->SetVolume(volume_);
-    sampleRate_ = sampleRate;
+    sampleRate_    = sampleRate;
+    inputChannels_ = inputChannels;
 
     sendDesc_ = XAUDIO2_SEND_DESCRIPTOR{};
     sendDesc_.Flags = 0;
@@ -71,6 +72,24 @@ void SubmixVoice::SetVolume(float volume)
         // 第二引数が存在
         // 即時化まとめてかを設定できるらしいが現状は不要なのでセットしない
     }
+}
+
+void SubmixVoice::SetPan(float pan)
+{
+    pan_ = std::clamp(pan, -1.0f, 1.0f);
+    if (!submixVoice_)        return;
+    if (inputChannels_ != 2)  return;  // 現状はステレオ入力のみ対応
+
+    // ステレオパン: 反対側を減衰、クロスチャネルなし
+    const float leftGain  = (pan_ <= 0.0f) ? 1.0f : (1.0f - pan_);
+    const float rightGain = (pan_ >= 0.0f) ? 1.0f : (1.0f + pan_);
+
+    // matrix[ srcCh * dst + src ]  (src=2, dst=2 想定)
+    //  [0] = L→L,  [1] = R→L,  [2] = L→R,  [3] = R→R
+    float matrix[4] = { leftGain, 0.0f, 0.0f, rightGain };
+
+    // 送信先 (Master または親 submix) が非ステレオの場合は HRESULT エラーとなり no-op。
+    submixVoice_->SetOutputMatrix(nullptr, 2, 2, matrix);
 }
 
 void SubmixVoice::SetFilter(XAUDIO2_FILTER_TYPE type, float cutoffHz, float oneOverQ)
