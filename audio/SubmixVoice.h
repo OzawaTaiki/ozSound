@@ -34,6 +34,13 @@ public:
     void SetVolume(float volume);
     float GetVolume() const { return volume_; }
 
+    /// <summary>
+    /// ステレオパンを設定する (-1.0=左, 0.0=中央, 1.0=右)。
+    /// inputChannels=2 のときのみ動作する。送信先が非ステレオなら no-op。
+    /// </summary>
+    void SetPan(float pan);
+    float GetPan() const { return pan_; }
+
     void SetFilter(XAUDIO2_FILTER_TYPE type, float cutoffHz, float oneOverQ = 1.0f);
     void ClearFilter();
 
@@ -47,7 +54,9 @@ private:
     IXAudio2SubmixVoice* submixVoice_ = nullptr;
     AudioEffectChain effectChain_ = {};
     float volume_ = 1.0f;
+    float pan_ = 0.0f;
     float sampleRate_ = 44100.0f;
+    uint32_t inputChannels_ = 2;
 };
 
 };// namespace ozSound

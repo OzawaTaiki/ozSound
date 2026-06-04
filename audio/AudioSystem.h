@@ -44,6 +44,9 @@ public:
 
     Microsoft::WRL::ComPtr<IXAudio2> GetXAudio2() { return xAudio2_; }
 
+    /// <summary>Mastering voice ポインタを取得 (Editor 用)。</summary>
+    IXAudio2MasteringVoice* GetMasteringVoice() const { return masterVoice_; }
+
     void SetMasterVolume(float _volume);
     float GetMasterVolume() const { return masterVolume_; }
 
