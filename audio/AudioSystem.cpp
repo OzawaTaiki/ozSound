@@ -164,6 +164,13 @@ void AudioSystem::LoadSubmixConfig(const std::string& jsonPath)
         return;
     }
 
+    LoadSubmixConfigFromJson(data);
+}
+
+void AudioSystem::LoadSubmixConfigFromJson(const json& data)
+{
+    if (data.empty()) return;
+
     // 既存 Submix をすべてクリアして再構築
     SoundEngine::GetInstance()->StopAll();
     for (auto& [name, sv] : namedSubmixes_)

@@ -147,6 +147,7 @@
     <ClCompile Include="audio\AudioEffect.cpp" />
     <ClCompile Include="audio\AudioEffectManager.cpp" />
     <ClCompile Include="audio\AudioSystem.cpp" />
+    <ClCompile Include="audio\ozSound.cpp" />
     <ClCompile Include="audio\SoundEngine.cpp" />
     <ClCompile Include="audio\SoundInstance.cpp" />
     <ClCompile Include="audio\SubmixVoice.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="audio\AudioSystem.h" />
     <ClInclude Include="audio\JsonUtils\JsonUtils.h" />
     <ClInclude Include="audio\Logger\SoundLogger.h" />
+    <ClInclude Include="audio\ozSound.h" />
     <ClInclude Include="audio\SoundDef.h" />
     <ClInclude Include="audio\SoundEngine.h" />
     <ClInclude Include="audio\SoundEventDef.h" />

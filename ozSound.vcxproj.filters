@@ -130,6 +130,7 @@
       <Filter>Externals\VST3SDK</Filter>
     </ClCompile>
     <ClCompile Include="externals\VST3SDK\base\source\fdebug.cpp" />
+    <ClCompile Include="audio\ozSound.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="audio\Audio.h">
@@ -196,6 +197,9 @@
       <Filter>Externals\json</Filter>
     </ClInclude>
     <ClInclude Include="audio\SubmixDef.h">
+      <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="audio\ozSound.h">
       <Filter>audio</Filter>
     </ClInclude>
   </ItemGroup>

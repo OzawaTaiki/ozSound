@@ -44,10 +44,21 @@ public:
     void LoadSoundData(const std::string& jsonPath);
 
     /// <summary>
+    /// 既にパース済みの JSON からサウンド定義を読み込む。
+    /// LoadProject 統合経路で 1 度の parse を共有するための入口。
+    /// </summary>
+    void LoadSoundDataFromJson(const json& data);
+
+    /// <summary>
     /// JSON ファイルからサウンドイベント定義を読み込む。
     /// </summary>
     /// <param name="jsonPath"></param>
     void LoadEventData(const std::string& jsonPath);
+
+    /// <summary>
+    /// 既にパース済みの JSON からサウンドイベント定義を読み込む。
+    /// </summary>
+    void LoadEventDataFromJson(const json& data);
 
     /// <summary>
     /// イベント名に紐づくサウンドイベントを実行する。
