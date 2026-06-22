@@ -12,6 +12,7 @@
 
 #include <xaudio2.h>
 #include "SubmixVoice.h"
+#include "JsonUtils/JsonUtils.h"   // ozSound::json
 
 #pragma comment (lib,"xaudio2.lib")
 
@@ -61,6 +62,12 @@ public:
     /// ファイルが存在しない場合はデフォルト（BGM/SE）を生成してファイルに保存する。
     /// </summary>
     void LoadSubmixConfig(const std::string& jsonPath);
+
+    /// <summary>
+    /// 既にパース済みの JSON からサブミックス定義を読み込む。
+    /// LoadProject 統合経路で 1 度の parse を共有するための入口。
+    /// </summary>
+    void LoadSubmixConfigFromJson(const json& data);
 
     /// <summary>
     /// 現在のサブミックス設定を JSON ファイルに保存する。

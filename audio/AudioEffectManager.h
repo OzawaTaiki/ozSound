@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AudioEffectDef.h"
+#include "JsonUtils/JsonUtils.h"   // ozSound::json
 #include "VST3/VST3ParameterManager.h"
 
 #include <xaudio2.h>
@@ -35,6 +36,12 @@ public:
     /// JSON からエフェクト定義を読み込む。
     /// </summary>
     void LoadEffectData(const std::string& jsonPath);
+
+    /// <summary>
+    /// 既にパース済みの JSON からエフェクト定義を読み込む。
+    /// LoadProject 統合経路で 1 度の parse を共有するための入口。
+    /// </summary>
+    void LoadEffectDataFromJson(const json& data);
 
     /// <summary>
     /// Native エフェクトをファクトリーに登録する。

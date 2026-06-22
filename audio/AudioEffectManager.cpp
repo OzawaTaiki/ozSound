@@ -61,8 +61,13 @@ void AudioEffectManager::LoadEffectData(const std::string& jsonPath)
         return;
     }
 
-    if (!jsonData.contains("effects"))
-        return;
+    LoadEffectDataFromJson(jsonData);
+}
+
+void AudioEffectManager::LoadEffectDataFromJson(const json& jsonData)
+{
+    if (jsonData.empty())            return;
+    if (!jsonData.contains("effects")) return;
 
     auto host = VST3Host::GetInstance();
 
