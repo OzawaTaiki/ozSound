@@ -129,8 +129,10 @@
     <ClCompile Include="externals\VST3SDK\public.sdk\source\common\threadchecker_win32.cpp">
       <Filter>Externals\VST3SDK</Filter>
     </ClCompile>
-    <ClCompile Include="externals\VST3SDK\base\source\fdebug.cpp" />
     <ClCompile Include="audio\ozSound.cpp" />
+    <ClCompile Include="externals\VST3SDK\base\source\fdebug.cpp">
+      <Filter>Externals\VST3SDK</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="audio\Audio.h">

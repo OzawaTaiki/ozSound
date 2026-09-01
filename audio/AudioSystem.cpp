@@ -39,6 +39,8 @@ void AudioSystem::Initialize()
 
     hresult = MFStartup(MF_VERSION, MFSTARTUP_NOSOCKET);
     CHECK_HR_VOID(hresult, "Failed to startup Media Foundation\n");
+
+    ozSound::Log("[AudioSystem] Initialized successfully\n");
 }
 
 void AudioSystem::Finalize()
@@ -169,7 +171,12 @@ void AudioSystem::LoadSubmixConfig(const std::string& jsonPath)
 
 void AudioSystem::LoadSubmixConfigFromJson(const json& data)
 {
-    if (data.empty()) return;
+    ozSound::Log("[AudioSystem] Loading Submix Config from JSON\n");
+    if (data.empty())
+    {
+        ozSound::Log("[AudioSystem] Submix Config JSON is empty. Using default.\n");
+        return;
+    }
 
     // 既存 Submix をすべてクリアして再構築
     SoundEngine::GetInstance()->StopAll();
@@ -199,6 +206,8 @@ void AudioSystem::LoadSubmixConfigFromJson(const json& data)
     // BGM / SE は必ず存在させる
     if (!namedSubmixes_.count("BGM")) AddSubmix("BGM", 2, 48000.0f, 1);
     if (!namedSubmixes_.count("SE"))  AddSubmix("SE", 2, 48000.0f, 1);
+
+    ozSound::Log("[AudioSystem] Submix Config loaded successfully\n");
 }
 
 void AudioSystem::SaveSubmixConfig(const std::string& jsonPath)

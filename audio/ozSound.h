@@ -100,9 +100,9 @@ inline float GetElapsedTime(SoundHandle h)          { return SoundEngine::GetIns
 inline float GetDuration   (const std::string& id)  { return SoundEngine::GetInstance()->GetDuration(id); }
 
 /// <summary>毎フレーム呼ぶ。再生終了済みボイスのクリーンアップ。</summary>
-inline void Tick()
+inline void Tick(float deltaTime)
 {
-    SoundEngine::GetInstance()->CleanupStoppedVoices();
+    SoundEngine::GetInstance()->Update(deltaTime);
 }
 
 // ── Master ──────────────────────────────────────────────────────────────────
