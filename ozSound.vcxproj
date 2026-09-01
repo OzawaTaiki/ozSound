@@ -44,13 +44,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(ProjectDir)bin\output\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)\bin\obj\$(Configuration)\</IntDir>
+    <OutDir>$(solutiondir)..\Generated\OutPuts\$(configuration)\</OutDir>
+    <IntDir>$(solutiondir)..\Generated\obj\$(projectName)\$(configuration)\</IntDir>
     <PublicIncludeDirectories>$(ProjectDir)externals\nlohmann;$(ProjectDir)externals\VST3SDK;$(ProjectDir)</PublicIncludeDirectories>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(ProjectDir)bin\output\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)\bin\obj\$(Configuration)\</IntDir>
+    <OutDir>$(solutiondir)..\Generated\OutPuts\$(configuration)\</OutDir>
+    <IntDir>$(solutiondir)..\Generated\obj\$(projectName)\$(configuration)\</IntDir>
     <PublicIncludeDirectories>$(ProjectDir)externals\nlohmann;$(ProjectDir)externals\VST3SDK;$(ProjectDir)</PublicIncludeDirectories>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
