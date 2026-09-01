@@ -34,6 +34,7 @@ public:
     static SoundEngine* GetInstance();
 
     void Initialize();
+    void Update(float deltaTime);
     void Finalize();
 
     /// <summary>
@@ -126,6 +127,21 @@ private:
 
     SoundHandle GenerateHandle();
 
+
+    struct PendingAction
+    {
+        SoundEventAction action;
+        float fireTime;
+    };
+
+    struct RunningEvent
+    {
+        std::vector<PendingAction> pending;
+        float elapsed;
+    };
+
+    void ExecuteAction(const SoundEventAction& action);
+
 private:
 
     std::unordered_map<std::string, SoundDef>                       soundDefs_;
@@ -134,6 +150,8 @@ private:
     std::unordered_map<SoundHandle, PlayingSound>                   playingSounds_;
 
     SoundHandle nextHandle_ = 0;
+
+    std::vector<RunningEvent> runningEvents_;
 
     std::string soundDataPath_; // LoadSoundData() で渡されたパスを記憶（Reload 用）
     std::string eventDataPath_; // LoadEventData() で渡されたパスを記憶（Reload 用）

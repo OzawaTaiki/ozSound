@@ -33,11 +33,28 @@ void SoundEngine::Initialize()
     loadedInstances_.clear();
     playingSounds_.clear();
     nextHandle_ = 0;
+}
 
-#ifdef _DEBUG
-    //ImGuiDebugManager::GetInstance()->RegisterMenuItem(
-        //"SoundEngine", [](bool* _open) { ImGui(_open); });
-#endif
+void SoundEngine::Update(float deltaTime)
+{
+    for (auto it = runningEvents_.begin(); it != runningEvents_.end(); )
+    {
+        it->elapsed += deltaTime;
+
+        auto& pending = it->pending;
+        while (!pending.empty() && pending.front().fireTime <= it->elapsed)
+        {
+            ExecuteAction(pending.front().action);
+            pending.erase(pending.begin());
+        }
+
+        if (pending.empty())
+            it = runningEvents_.erase(it);
+        else
+            ++it;
+    }
+
+    CleanupStoppedVoices();
 }
 
 void SoundEngine::Finalize()
@@ -76,8 +93,17 @@ void SoundEngine::LoadSoundData(const std::string& jsonPath)
 
 void SoundEngine::LoadSoundDataFromJson(const json& jsonData)
 {
-    if (jsonData.empty())             return;
-    if (!jsonData.contains("sounds")) return;
+    ozSound::Log("Loading Sound Data from JSON\n");
+    if (jsonData.empty())
+    {
+        ozSound::Log("Sound Data JSON is empty. No sounds loaded.\n");
+        return;
+    }
+    if (!jsonData.contains("sounds"))
+    {
+        ozSound::Log("Sound Data JSON does not contain 'sounds' key. No sounds loaded.\n");
+        return;
+    }
 
     for (const auto& entry : jsonData["sounds"])
     {
@@ -94,6 +120,8 @@ void SoundEngine::LoadSoundDataFromJson(const json& jsonData)
             loadedInstances_[def.id] = instance;
         }
     }
+
+    ozSound::Log("Sound Data loaded successfully\n");
 }
 
 void SoundEngine::LoadEventData(const std::string& jsonPath)
@@ -127,8 +155,17 @@ void SoundEngine::LoadEventData(const std::string& jsonPath)
 
 void SoundEngine::LoadEventDataFromJson(const json& jsonData)
 {
-    if (jsonData.empty())             return;
-    if (!jsonData.contains("events")) return;
+    ozSound::Log("Loading Sound Event Data from JSON\n");
+    if (jsonData.empty())
+    {
+        ozSound::Log("Sound Event Data JSON is empty. No events loaded.\n");
+        return;
+    }
+    if (!jsonData.contains("events"))
+    {
+        ozSound::Log("Sound Event Data JSON does not contain 'events' key. No events loaded.\n");
+        return;
+    }
 
     for (const auto& entry : jsonData["events"])
     {
@@ -137,7 +174,10 @@ void SoundEngine::LoadEventDataFromJson(const json& jsonData)
             continue;
 
         eventDefs_[eventDef.name] = eventDef;
+        ozSound::Log("Loaded Sound Event: " + eventDef.name + "\n");
     }
+
+    ozSound::Log("Sound Event Data loaded successfully\n");
 }
 
 void SoundEngine::PostEvent(const std::string& eventName)
@@ -147,71 +187,90 @@ void SoundEngine::PostEvent(const std::string& eventName)
         return;
 
     const SoundEventDef& eventDef = it->second;
+
+    RunningEvent runningEvent;
+    runningEvent.elapsed = 0.0f;
     for (const auto& action : eventDef.actions)
     {
-        switch (action.type)
-        {
-            case SoundEventType::Play:
-            {
-                if (action.effects.empty())
-                    Play(action.soundId, action.volume, action.loop);
-                else
-                    Play(action.soundId, action.effects, action.volume, action.loop);
-                break;
-            }
-            case SoundEventType::Stop:
-            {
-                std::vector<SoundHandle> targets;
-                for (const auto& [handle, ps] : playingSounds_)
-                    if (ps.soundId == action.soundId)
-                        targets.push_back(handle);
-                for (auto h : targets)
-                    Stop(h);
-                break;
-            }
-            case SoundEventType::Pause:
-            {
-                std::vector<SoundHandle> targets;
-                for (const auto& [handle, ps] : playingSounds_)
-                    if (ps.soundId == action.soundId)
-                        targets.push_back(handle);
-                for (auto h : targets)
-                    Pause(h);
-                break;
-            }
-            case SoundEventType::Resume:
-            {
-                std::vector<SoundHandle> targets;
-                for (const auto& [handle, ps] : playingSounds_)
-                    if (ps.soundId == action.soundId)
-                        targets.push_back(handle);
-                for (auto h : targets)
-                    Resume(h);
-                break;
-            }
-            case SoundEventType::SetVolume:
-            {
-                std::vector<SoundHandle> targets;
-                for (const auto& [handle, ps] : playingSounds_)
-                    if (ps.soundId == action.soundId)
-                        targets.push_back(handle);
-                for (auto h : targets)
-                    SetVolume(h, action.volume);
-                break;
-            }
-            case SoundEventType::SetSpeed:
-            {
-                std::vector<SoundHandle> targets;
-                for (const auto& [handle, ps] : playingSounds_)
-                    if (ps.soundId == action.soundId)
-                        targets.push_back(handle);
-                for (auto h : targets)
-                    SetSpeed(h, action.speed);
-            }
-            default:
-                break;
-        }
+        PendingAction pending;
+        pending.action = action;
+        pending.fireTime = action.startTime;
+        runningEvent.pending.push_back(pending);
     }
+
+    std::stable_sort(runningEvent.pending.begin(), runningEvent.pending.end(),
+                     [](const PendingAction& a, const PendingAction& b)
+                     {
+                         return a.fireTime < b.fireTime;
+                     });
+
+    runningEvents_.push_back(std::move(runningEvent));
+
+    //for (const auto& action : eventDef.actions)
+    //{
+    //    switch (action.type)
+    //    {
+    //        case SoundEventType::Play:
+    //        {
+    //            if (action.effects.empty())
+    //                Play(action.soundId, action.volume, action.loop);
+    //            else
+    //                Play(action.soundId, action.effects, action.volume, action.loop);
+    //            break;
+    //        }
+    //        case SoundEventType::Stop:
+    //        {
+    //            std::vector<SoundHandle> targets;
+    //            for (const auto& [handle, ps] : playingSounds_)
+    //                if (ps.soundId == action.soundId)
+    //                    targets.push_back(handle);
+    //            for (auto h : targets)
+    //                Stop(h);
+    //            break;
+    //        }
+    //        case SoundEventType::Pause:
+    //        {
+    //            std::vector<SoundHandle> targets;
+    //            for (const auto& [handle, ps] : playingSounds_)
+    //                if (ps.soundId == action.soundId)
+    //                    targets.push_back(handle);
+    //            for (auto h : targets)
+    //                Pause(h);
+    //            break;
+    //        }
+    //        case SoundEventType::Resume:
+    //        {
+    //            std::vector<SoundHandle> targets;
+    //            for (const auto& [handle, ps] : playingSounds_)
+    //                if (ps.soundId == action.soundId)
+    //                    targets.push_back(handle);
+    //            for (auto h : targets)
+    //                Resume(h);
+    //            break;
+    //        }
+    //        case SoundEventType::SetVolume:
+    //        {
+    //            std::vector<SoundHandle> targets;
+    //            for (const auto& [handle, ps] : playingSounds_)
+    //                if (ps.soundId == action.soundId)
+    //                    targets.push_back(handle);
+    //            for (auto h : targets)
+    //                SetVolume(h, action.volume);
+    //            break;
+    //        }
+    //        case SoundEventType::SetSpeed:
+    //        {
+    //            std::vector<SoundHandle> targets;
+    //            for (const auto& [handle, ps] : playingSounds_)
+    //                if (ps.soundId == action.soundId)
+    //                    targets.push_back(handle);
+    //            for (auto h : targets)
+    //                SetSpeed(h, action.speed);
+    //        }
+    //        default:
+    //            break;
+    //    }
+    //}
 }
 
 SoundHandle SoundEngine::Play(const std::string& soundId,
@@ -420,6 +479,72 @@ SoundHandle SoundEngine::GenerateHandle()
         nextHandle_ = 0;
 
     return nextHandle_++;
+}
+
+void SoundEngine::ExecuteAction(const SoundEventAction& action)
+{
+    switch (action.type)
+    {
+        case SoundEventType::Play:
+        {
+            if (action.effects.empty())
+                Play(action.soundId, action.volume, action.loop);
+            else
+                Play(action.soundId, action.effects, action.volume, action.loop);
+            break;
+        }
+        case SoundEventType::Stop:
+        {
+            std::vector<SoundHandle> targets;
+            for (const auto& [handle, ps] : playingSounds_)
+                if (ps.soundId == action.soundId)
+                    targets.push_back(handle);
+            for (auto h : targets)
+                Stop(h);
+            break;
+        }
+        case SoundEventType::Pause:
+        {
+            std::vector<SoundHandle> targets;
+            for (const auto& [handle, ps] : playingSounds_)
+                if (ps.soundId == action.soundId)
+                    targets.push_back(handle);
+            for (auto h : targets)
+                Pause(h);
+            break;
+        }
+        case SoundEventType::Resume:
+        {
+            std::vector<SoundHandle> targets;
+            for (const auto& [handle, ps] : playingSounds_)
+                if (ps.soundId == action.soundId)
+                    targets.push_back(handle);
+            for (auto h : targets)
+                Resume(h);
+            break;
+        }
+        case SoundEventType::SetVolume:
+        {
+            std::vector<SoundHandle> targets;
+            for (const auto& [handle, ps] : playingSounds_)
+                if (ps.soundId == action.soundId)
+                    targets.push_back(handle);
+            for (auto h : targets)
+                SetVolume(h, action.volume);
+            break;
+        }
+        case SoundEventType::SetSpeed:
+        {
+            std::vector<SoundHandle> targets;
+            for (const auto& [handle, ps] : playingSounds_)
+                if (ps.soundId == action.soundId)
+                    targets.push_back(handle);
+            for (auto h : targets)
+                SetSpeed(h, action.speed);
+        }
+        default:
+            break;
+    }
 }
 
 void SoundEngine::StopSoundsOnSubmix(const std::string& submixName)

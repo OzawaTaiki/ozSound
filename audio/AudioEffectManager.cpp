@@ -66,8 +66,17 @@ void AudioEffectManager::LoadEffectData(const std::string& jsonPath)
 
 void AudioEffectManager::LoadEffectDataFromJson(const json& jsonData)
 {
-    if (jsonData.empty())            return;
-    if (!jsonData.contains("effects")) return;
+    ozSound::Log("[AudioEffectManager] Loading Effect Data from JSON\n");
+    if (jsonData.empty())
+    {
+        ozSound::Log("[AudioEffectManager] Effect Data JSON is empty. No effects loaded.\n");
+        return;
+    }
+    if (!jsonData.contains("effects"))
+    {
+        ozSound::Log("[AudioEffectManager] Effect Data JSON does not contain 'effects' key. No effects loaded.\n");
+        return;
+    }
 
     auto host = VST3Host::GetInstance();
 
@@ -113,6 +122,8 @@ void AudioEffectManager::LoadEffectDataFromJson(const json& jsonData)
         }
 
     }
+
+    ozSound::Log("[AudioEffectManager] Effect Data loaded successfully\n");
 }
 
 void AudioEffectManager::RegisterNativeEffect(const std::string& name, std::function<IUnknown* ()> creator)
@@ -147,7 +158,7 @@ AudioEffectChain AudioEffectManager::BuildEffectChain(const std::vector<std::str
             continue;
 
         IUnknown* xapo = nullptr;
-        if(defIt->second.type==AudioEffectType::VST3)
+        if (defIt->second.type == AudioEffectType::VST3)
         {
 
             auto pluginEntry = GetVST3PluginEntry(effectName);
