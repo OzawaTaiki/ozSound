@@ -2,6 +2,7 @@
 
 #include "Logger/SoundLogger.h"
 
+#include <algorithm>
 #include <stdexcept>
 #include <utility>
 
@@ -29,7 +30,7 @@ VoiceInstance::VoiceInstance(IXAudio2SourceVoice* _sourceVoice, float _volume, f
         volume_ = 1.0f;
     }
 
-    hr_ = sourceVoice_->SetVolume(volume_);
+    ApplyVolume();
     CheckHRESULT();
 
 }
@@ -102,23 +103,89 @@ void VoiceInstance::Resume()
 
 void VoiceInstance::FadeIn(float _fadeTime)
 {
-    // todo : 実装
-    _fadeTime;
+    // 時間指定が無ければ待たずに鳴らし切る
+    if (_fadeTime <= 0.0f)
+    {
+        isFading_ = false;
+        stopOnFadeEnd_ = false;
+        fadeGain_ = 1.0f;
+        ApplyVolume();
+        return;
+    }
+
+    fadeGainFrom_ = 0.0f;
+    fadeGainTo_ = 1.0f;
+    fadeDuration_ = _fadeTime;
+    fadeElapsed_ = 0.0f;
+    isFading_ = true;
+    stopOnFadeEnd_ = false;
+
+    // 立ち上がりを待たずに無音から始める（次の UpdateFade から上がっていく）
+    fadeGain_ = 0.0f;
+    ApplyVolume();
 }
 
 void VoiceInstance::FadeOut(float _fadeTime)
 {
-    // todo : 実装
-    _fadeTime;
+    // 時間指定が無ければその場で止める
+    if (_fadeTime <= 0.0f)
+    {
+        isFading_ = false;
+        stopOnFadeEnd_ = false;
+        fadeGain_ = 0.0f;
+        ApplyVolume();
+        Stop();
+        return;
+    }
+
+    fadeGainFrom_ = fadeGain_;   // 途中から掛け直しても今の音量から繋がる
+    fadeGainTo_ = 0.0f;
+    fadeDuration_ = _fadeTime;
+    fadeElapsed_ = 0.0f;
+    isFading_ = true;
+    stopOnFadeEnd_ = true;
+}
+
+void VoiceInstance::UpdateFade(float _deltaTime)
+{
+    if (!isFading_)
+        return;
+
+    fadeElapsed_ += _deltaTime;
+
+    const float t = (fadeDuration_ > 0.0f)
+        ? (std::min)(1.0f, fadeElapsed_ / fadeDuration_)
+        : 1.0f;
+
+    fadeGain_ = fadeGainFrom_ + (fadeGainTo_ - fadeGainFrom_) * t;
+    ApplyVolume();
+
+    if (t < 1.0f)
+        return;
+
+    isFading_ = false;
+
+    // フェードアウトは下がり切ったところで止める。
+    // 停止後は IsPlaying() が false になり、SoundEngine 側の掃除で回収される
+    if (stopOnFadeEnd_)
+    {
+        stopOnFadeEnd_ = false;
+        Stop();
+    }
+}
+
+void VoiceInstance::ApplyVolume()
+{
+    if (sourceVoice_)
+        hr_ = sourceVoice_->SetVolume(volume_ * fadeGain_);
 }
 
 void VoiceInstance::SetVolume(float _volume)
 {
-    if (sourceVoice_)
-    {
-        hr_ = sourceVoice_->SetVolume(_volume);
-        volume_ = _volume;
-    }
+    // フェード中でも破綻しないよう、指定値は volume_ に置くだけにして
+    // 実際に流す音量は ApplyVolume() で fadeGain_ と掛け合わせる
+    volume_ = _volume;
+    ApplyVolume();
     CheckHRESULT();
 }
 

@@ -73,22 +73,30 @@ inline void PostEvent(const std::string& eventName)
     SoundEngine::GetInstance()->PostEvent(eventName);
 }
 
+// startTime = 音源の再生開始位置(秒)、duration = 鳴らす長さ(秒)。
+// duration = 0 で末尾まで（従来どおり）。
 inline SoundHandle Play(const std::string& soundId,
                         float volume    = 1.0f,
                         bool  loop      = false,
-                        float startTime = 0.0f)
+                        float startTime = 0.0f,
+                        float duration  = 0.0f)
 {
-    return SoundEngine::GetInstance()->Play(soundId, volume, loop, startTime);
+    return SoundEngine::GetInstance()->Play(soundId, volume, loop, startTime, duration);
 }
 
 inline SoundHandle Play(const std::string& soundId,
                         const std::vector<std::string>& effects,
                         float volume    = 1.0f,
                         bool  loop      = false,
-                        float startTime = 0.0f)
+                        float startTime = 0.0f,
+                        float duration  = 0.0f)
 {
-    return SoundEngine::GetInstance()->Play(soundId, effects, volume, loop, startTime);
+    return SoundEngine::GetInstance()->Play(soundId, effects, volume, loop, startTime, duration);
 }
+
+// フェードは毎フレームの Tick() で進む。FadeOut は下がり切ったところで自動停止する
+inline void  FadeIn        (SoundHandle h, float t) { SoundEngine::GetInstance()->FadeIn(h, t); }
+inline void  FadeOut       (SoundHandle h, float t) { SoundEngine::GetInstance()->FadeOut(h, t); }
 
 inline void  Stop          (SoundHandle h)          { SoundEngine::GetInstance()->Stop(h); }
 inline void  StopAll       ()                       { SoundEngine::GetInstance()->StopAll(); }

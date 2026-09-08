@@ -26,11 +26,16 @@ public:
     /// ボイスを生成する。_effectChain は所有権ごと渡す (空チェーン可)。
     /// 生成されたボイスがチェーンを保持するので、再生開始後も
     /// VoiceInstance::GetEffectChain() 経由で Enable/Disable できる。
+    ///
+    /// _startTime / _duration は音源のどこを鳴らすかの指定。
+    /// _startTime = 再生開始位置(秒)、_duration = 鳴らす長さ(秒)。
+    /// _duration <= 0 なら末尾まで鳴らす（従来どおり）。
+    /// 音源の残り尺を超える指定は末尾までに丸める。
     /// </summary>
-    std::shared_ptr<VoiceInstance> GenerateVoiceInstance(float _volume = 1.0f, float _startTime = 0.0f, bool _loop = false, bool _enableOverlap = true, VoiceCallBack* _callback = nullptr, SubmixVoice* _submix = nullptr, AudioEffectChain _effectChain = {});
+    std::shared_ptr<VoiceInstance> GenerateVoiceInstance(float _volume = 1.0f, float _startTime = 0.0f, bool _loop = false, bool _enableOverlap = true, VoiceCallBack* _callback = nullptr, SubmixVoice* _submix = nullptr, AudioEffectChain _effectChain = {}, float _duration = 0.0f);
 
     std::shared_ptr<VoiceInstance> Play(float _volume, bool _loop = false, bool _enableOverlap = true, VoiceCallBack* _callback = nullptr, SubmixVoice* _submix = nullptr);
-    std::shared_ptr<VoiceInstance> Play(float _volume, float _startTime, bool _loop = false, bool _enableOverlap = true, VoiceCallBack* _callback = nullptr, SubmixVoice* _submix = nullptr);
+    std::shared_ptr<VoiceInstance> Play(float _volume, float _startTime, bool _loop = false, bool _enableOverlap = true, VoiceCallBack* _callback = nullptr, SubmixVoice* _submix = nullptr, float _duration = 0.0f);
 
     std::vector<float> GetAudioData() const;
 

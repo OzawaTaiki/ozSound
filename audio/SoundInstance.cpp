@@ -23,7 +23,7 @@ SoundInstance::~SoundInstance()
 {
 }
 
-std::shared_ptr<VoiceInstance> SoundInstance::GenerateVoiceInstance(float _volume, float _startTime, bool _loop, bool _enableOverlap, VoiceCallBack* _callback, SubmixVoice* _submix, AudioEffectChain _effectChain)
+std::shared_ptr<VoiceInstance> SoundInstance::GenerateVoiceInstance(float _volume, float _startTime, bool _loop, bool _enableOverlap, VoiceCallBack* _callback, SubmixVoice* _submix, AudioEffectChain _effectChain, float _duration)
 {
     if (!_enableOverlap)
     {
@@ -73,13 +73,33 @@ std::shared_ptr<VoiceInstance> SoundInstance::GenerateVoiceInstance(float _volum
         return nullptr;
     }
 
+    // 鳴らす範囲をサンプル単位で決める。
+    // PlayBegin = 開始位置、PlayLength = 鳴らす長さで、PlayLength = 0 が
+    // 「末尾まで」を意味するのが XAudio2 の規約。
+    // 音源の実サンプル数を超える範囲を渡すと SubmitSourceBuffer が失敗するので、
+    // どちらも実データの内側へ丸めてから積む。
+    const UINT32 audioBytes = static_cast<UINT32>(audioSystem_->GetBufferSize(soundID_));
+    const WAVEFORMATEX& format = audioSystem_->GetSoundFormat(soundID_);
+    const UINT32 blockAlign = (format.nBlockAlign > 0) ? format.nBlockAlign : 1;
+    const UINT32 totalSamples = audioBytes / blockAlign;
+
     UINT32 startSample = static_cast<UINT32>(_startTime * sampleRate_);
+    if (startSample >= totalSamples)
+        startSample = 0;   // 開始位置が尺を超えている指定は頭から鳴らす
+
+    UINT32 playSamples = 0;   // 0 = 末尾まで
+    if (_duration > 0.0f)
+    {
+        playSamples = static_cast<UINT32>(_duration * sampleRate_);
+        if (playSamples >= totalSamples - startSample)
+            playSamples = 0;   // 残り尺いっぱいなら「末尾まで」と同じ
+    }
 
     XAUDIO2_BUFFER buf{};
     buf.pAudioData = audioSystem_->GetBuffer(soundID_);
-    buf.AudioBytes = static_cast<UINT32>(audioSystem_->GetBufferSize(soundID_));
+    buf.AudioBytes = audioBytes;
     buf.PlayBegin = startSample;
-    buf.PlayLength = 0; // 最後まで再生
+    buf.PlayLength = playSamples;
     buf.Flags = XAUDIO2_END_OF_STREAM;
 
     if (_loop)
@@ -105,9 +125,9 @@ std::shared_ptr<VoiceInstance> SoundInstance::Play(float _volume, bool _loop, bo
     return Play(_volume, 0.0f, _loop, _enableOverlap, _callback, _submix);
 }
 
-std::shared_ptr<VoiceInstance> SoundInstance::Play(float _volume, float _startTime, bool _loop, bool _enableOverlap, VoiceCallBack* _callback, SubmixVoice* _submix)
+std::shared_ptr<VoiceInstance> SoundInstance::Play(float _volume, float _startTime, bool _loop, bool _enableOverlap, VoiceCallBack* _callback, SubmixVoice* _submix, float _duration)
 {
-    auto voiceInstance = GenerateVoiceInstance(_volume, _startTime, _loop, _enableOverlap, _callback, _submix);
+    auto voiceInstance = GenerateVoiceInstance(_volume, _startTime, _loop, _enableOverlap, _callback, _submix, {}, _duration);
     if (voiceInstance)
     {
         voiceInstance->Play();

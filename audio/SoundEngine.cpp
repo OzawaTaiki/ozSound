@@ -56,6 +56,14 @@ void SoundEngine::Update(float deltaTime)
             ++it;
     }
 
+    // フェード中のボイスを進める。フェードアウトは下がり切ったところで自ら停止するので、
+    // 直後の CleanupStoppedVoices() が再生リストから外してくれる
+    for (auto& [handle, ps] : playingSounds_)
+    {
+        if (ps.voiceInstance)
+            ps.voiceInstance->UpdateFade(deltaTime);
+    }
+
     CleanupStoppedVoices();
 }
 
@@ -278,7 +286,8 @@ void SoundEngine::PostEvent(const std::string& eventName)
 SoundHandle SoundEngine::Play(const std::string& soundId,
                               float volume,
                               bool  loop,
-                              float startTime)
+                              float startTime,
+                              float duration)
 {
     auto instIt = loadedInstances_.find(soundId);
     if (instIt == loadedInstances_.end())
@@ -303,8 +312,9 @@ SoundHandle SoundEngine::Play(const std::string& soundId,
         loop,
         def.enableOverlap,
         nullptr,
-        submix
-        // エフェクト指定なし版 → 空のチェーン (デフォルト引数)
+        submix,
+        {},          // エフェクト指定なし版 → 空のチェーン
+        duration
     );
 
     if (!voice)
@@ -321,7 +331,8 @@ SoundHandle SoundEngine::Play(const std::string& soundId,
                               const std::vector<std::string>& effects,
                               float volume,
                               bool loop,
-                              float startTime)
+                              float startTime,
+                              float duration)
 {
     auto instIt = loadedInstances_.find(soundId);
     if (instIt == loadedInstances_.end())
@@ -350,7 +361,8 @@ SoundHandle SoundEngine::Play(const std::string& soundId,
         def.enableOverlap,
         nullptr,
         submix,
-        std::move(effectChain)
+        std::move(effectChain),
+        duration
     );
 
     if (!voice)
@@ -373,6 +385,28 @@ void SoundEngine::Stop(SoundHandle handle)
         it->second.voiceInstance->Stop();
 
     playingSounds_.erase(it);
+}
+
+void SoundEngine::FadeIn(SoundHandle handle, float fadeTime)
+{
+    auto it = playingSounds_.find(handle);
+    if (it == playingSounds_.end())
+        return;
+
+    if (it->second.voiceInstance)
+        it->second.voiceInstance->FadeIn(fadeTime);
+}
+
+void SoundEngine::FadeOut(SoundHandle handle, float fadeTime)
+{
+    auto it = playingSounds_.find(handle);
+    if (it == playingSounds_.end())
+        return;
+
+    // 下がり切ったら VoiceInstance 側が自分で止まる。
+    // ここで playingSounds_ から消さないのは、フェード中も Update で進める必要があるため
+    if (it->second.voiceInstance)
+        it->second.voiceInstance->FadeOut(fadeTime);
 }
 
 void SoundEngine::StopAll()
@@ -489,10 +523,13 @@ void SoundEngine::ExecuteAction(const SoundEventAction& action)
     {
         case SoundEventType::Play:
         {
+            // action.startTime は「イベント開始からの発火遅延」であって音源の再生位置ではない
+            // （発火待ちは PendingAction 側で済んでいる）ので、再生位置は常に頭から。
+            // action.duration が鳴らす長さ。0 なら音源の末尾まで。
             if (action.effects.empty())
-                Play(action.soundId, action.volume, action.loop);
+                Play(action.soundId, action.volume, action.loop, 0.0f, action.duration);
             else
-                Play(action.soundId, action.effects, action.volume, action.loop);
+                Play(action.soundId, action.effects, action.volume, action.loop, 0.0f, action.duration);
             break;
         }
         case SoundEventType::Stop:

@@ -71,20 +71,39 @@ public:
     /// サウンドを再生し、操作用ハンドルを返す。
     /// type が "BGM" なら BGM submix、それ以外は SE submix に自動振り分け。
     /// 失敗時は kInvalidHandle を返す。
+    ///
+    /// startTime / duration は音源のどこを鳴らすかの指定。
+    /// startTime = 再生開始位置(秒)、duration = 鳴らす長さ(秒)で、
+    /// duration = 0 なら末尾まで鳴らす。
+    /// 足音のような「頭だけ使いたい」短い SE は、素材を切らずにここで尺を決められる。
     /// </summary>
     SoundHandle Play(const std::string& soundId,
                      float volume    = 1.0f,
                      bool  loop      = false,
-                     float startTime = 0.0f);
+                     float startTime = 0.0f,
+                     float duration  = 0.0f);
 
     SoundHandle Play(const std::string& soundId,
                      const std::vector<std::string>& effects,
                      float volume = 1.0f,
                      bool loop = false,
-                     float startTime = 0.0f);
+                     float startTime = 0.0f,
+                     float duration = 0.0f);
 
     void Stop(SoundHandle handle);
     void StopAll();
+
+    /// <summary>
+    /// 無音から本来の音量まで上げる。呼んだ瞬間に無音になり、以降フレームごとに上がる。
+    /// 鳴らし始めと同じフレームで呼べば、頭からのフェードインになる。
+    /// </summary>
+    void FadeIn(SoundHandle handle, float fadeTime);
+
+    /// <summary>
+    /// 今の音量から無音まで下げ、下がり切ったところで自動的に停止する。
+    /// 停止を待たずに呼び出し側が Stop() すると、その時点で切れる。
+    /// </summary>
+    void FadeOut(SoundHandle handle, float fadeTime);
     void Pause(SoundHandle handle);
     void Resume(SoundHandle handle);
     void SetVolume(SoundHandle handle, float volume);

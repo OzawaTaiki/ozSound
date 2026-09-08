@@ -35,16 +35,29 @@ public:
     void Resume();
 
     /// <summary>
-    /// フェードイン(未実装)
+    /// 無音から本来の音量まで上げる。
+    /// 呼んだ時点で即座に無音になり、以降 UpdateFade() を回すぶんだけ上がっていく。
+    /// _fadeTime <= 0 なら即座に本来の音量へ。
     /// </summary>
     /// <param name="_fadeTime">フェードインにかかる時間(秒)</param>
     void FadeIn(float _fadeTime);
 
     /// <summary>
-    /// フェードアウト(未実装)
+    /// 現在の音量から無音まで下げ、下がり切ったら Stop() する。
+    /// _fadeTime <= 0 なら即座に停止する。
     /// </summary>
     /// <param name="_fadeTime">フェードアウトにかかる時間(秒)</param>
     void FadeOut(float _fadeTime);
+
+    /// <summary>
+    /// フェードを 1 フレーム進める。SoundEngine::Update() が毎フレーム呼ぶ。
+    /// フェード中でなければ何もしない。
+    /// </summary>
+    /// <param name="_deltaTime">前フレームからの経過時間(秒)</param>
+    void UpdateFade(float _deltaTime);
+
+    /// <summary>フェード中か</summary>
+    bool IsFading() const { return isFading_; }
 
     /// <summary>
     /// 音量を設定
@@ -125,14 +138,29 @@ private:
     /// </summary>
     void CheckHRESULT() const ;
 
+    /// <summary>
+    /// 実際にボイスへ流す音量 (volume_ * fadeGain_) を適用する。
+    /// 音量指定とフェードを独立して扱うため、必ずこの掛け算を通す。
+    /// </summary>
+    void ApplyVolume();
+
     // 一時停止
     bool isPaused_ = false;
 
-    // フェードイン中かどうか
-    bool isFadingIn_ = false;
-
-    // 音量
+    // 音量。フェードとは独立した「本来の音量」で、SetVolume() が書き換える
     float volume_ = 1.0f;
+
+    // ── フェード ──────────────────────────────────────────────
+    // 音量に掛ける係数 0..1。実際にボイスへ渡すのは volume_ * fadeGain_。
+    // こうしておくとフェード中に SetVolume() されても破綻しない
+    float fadeGain_ = 1.0f;
+
+    bool  isFading_ = false;
+    bool  stopOnFadeEnd_ = false;   // フェードアウトなら下がり切ったところで Stop する
+    float fadeElapsed_ = 0.0f;
+    float fadeDuration_ = 0.0f;
+    float fadeGainFrom_ = 0.0f;
+    float fadeGainTo_ = 1.0f;
 
     // 再生開始時間
     float startTime_ = 0.0f;
