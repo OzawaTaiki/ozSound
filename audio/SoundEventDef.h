@@ -19,6 +19,8 @@ enum class SoundEventType
     Delay,
     DuckingStart,
     DuckingEnd,
+    SetEffectEnabled,   // 再生中のボイスのエフェクトを ON/OFF する
+    SetEffectParam,     // エフェクトのパラメータを名前指定で書き換える (VST3)
 };
 
 struct SoundEventAction
@@ -36,6 +38,14 @@ struct SoundEventAction
     std::string targetSubmix = ""; // 対象のサブミックス（空の場合は全体）
     float fadeTime = 0.2f;
     float releaseTime = 1.0f;
+
+    // ── SetEffectEnabled / SetEffectParam 用 ────────────────────────────
+    // 対象は soundId で指定したサウンドの再生中ボイス。
+    // effectName は Play action の effects に積んだ名前と一致している必要がある。
+    std::string effectName = "";   // 対象エフェクト名
+    std::string paramName  = "";   // SetEffectParam: パラメータ名（ID ではなく名前で保存する）
+    float       paramValue = 0.0f; // SetEffectParam: 正規化値 0.0〜1.0
+    bool        effectEnabled = true; // SetEffectEnabled: ON/OFF
 
 };
 
@@ -57,6 +67,8 @@ NLOHMANN_JSON_SERIALIZE_ENUM(SoundEventType, {
     {SoundEventType::Delay,         "Delay"         },
     {SoundEventType::DuckingStart,  "DuckingStart"  },
     {SoundEventType::DuckingEnd,    "DuckingEnd"    },
+    {SoundEventType::SetEffectEnabled, "SetEffectEnabled"},
+    {SoundEventType::SetEffectParam,   "SetEffectParam"  },
 })
 
 
@@ -74,6 +86,10 @@ inline void to_json(json& j, const SoundEventAction& v)
         {"targetSubmix",    v.targetSubmix  },
         {"fadeTime",        v.fadeTime      },
         {"releaseTime",     v.releaseTime   },
+        {"effectName",      v.effectName    },
+        {"paramName",       v.paramName     },
+        {"paramValue",      v.paramValue    },
+        {"effectEnabled",   v.effectEnabled },
     };
 }
 
@@ -90,6 +106,10 @@ inline void from_json(const json& j, SoundEventAction& v)
     v.targetSubmix  = j.value("targetSubmix",   std::string("")             );
     v.fadeTime      = j.value("fadeTime",       0.2f                        );
     v.releaseTime   = j.value("releaseTime",    1.0f                        );
+    v.effectName    = j.value("effectName",     std::string("")             );
+    v.paramName     = j.value("paramName",      std::string("")             );
+    v.paramValue    = j.value("paramValue",     0.0f                        );
+    v.effectEnabled = j.value("effectEnabled",  true                        );
 }
 
 inline void to_json(json& j, const SoundEventDef& v)

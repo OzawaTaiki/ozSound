@@ -98,7 +98,10 @@ public:
     /// </summary>
     const std::map<std::string, std::unique_ptr<SubmixVoice>>& GetAllSubmixes() const { return namedSubmixes_; }
 
-    const WAVEFORMATEX& GetSoundFormat(uint32_t _soundID) const { return sounds_[_soundID].wfex; }
+    const WAVEFORMATEX& GetSoundFormat(uint32_t _soundID) const
+    {
+        return *reinterpret_cast<const WAVEFORMATEX*>(sounds_[_soundID].formatBlob.data());
+    }
     const BYTE* GetBuffer(uint32_t _soundID) const { return sounds_[_soundID].mediaData.data(); }
     size_t GetBufferSize(uint32_t _soundID) const { return sounds_[_soundID].mediaData.size(); }
 
@@ -108,7 +111,10 @@ private:
 
     struct SoundData
     {
-        WAVEFORMATEX wfex;
+        // WAVEFORMATEX 本体 + 拡張部 (cbSize バイト) を丸ごと保持する。
+        // mp3 等は MF が WAVEFORMATEXTENSIBLE を返すため、WAVEFORMATEX の
+        // 値コピーでは末尾 22 バイト (SubFormat 等) が失われ CreateSourceVoice が失敗する。
+        std::vector<BYTE> formatBlob;
         std::vector<BYTE> mediaData;
         std::string path;
     };

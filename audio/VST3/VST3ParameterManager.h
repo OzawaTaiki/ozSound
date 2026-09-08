@@ -24,6 +24,11 @@ public:
     // indexで指定したパラメータのIDを返す
     std::string GetParameterName(int32_t index) const;
 
+    // パラメータ名から index を引く。見つからなければ -1。
+    // .ozproj には ParamID ではなく名前で保存し、ロード後にここで解決する。
+    // (ParamID を直接書くとプラグインのバージョン差で別パラメータを指すため)
+    int32_t FindParameterIndex(const std::string& name) const;
+
     // パラメータの値を取得する(0.0～1.0の正規化された値)
     double GetParameter(Steinberg::Vst::ParamID id) const;
 

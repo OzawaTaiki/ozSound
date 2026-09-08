@@ -8,6 +8,8 @@
 
 #include "Logger/SoundLogger.h"
 
+#include <utility>
+
 #ifdef _DEBUG
 //#include <Debug/ImGuiDebugManager.h>
 //#include <imgui.h>
@@ -242,8 +244,8 @@ SoundHandle SoundEngine::Play(const std::string& soundId,
         loop,
         def.enableOverlap,
         nullptr,
-        submix,
-        nullptr
+        submix
+        // エフェクト指定なし版 → 空のチェーン (デフォルト引数)
     );
 
     if (!voice)
@@ -289,7 +291,7 @@ SoundHandle SoundEngine::Play(const std::string& soundId,
         def.enableOverlap,
         nullptr,
         submix,
-        effectChain.BuildChain()
+        std::move(effectChain)
     );
 
     if (!voice)

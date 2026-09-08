@@ -3,6 +3,7 @@
 #include "Logger/SoundLogger.h"
 
 #include <stdexcept>
+#include <utility>
 
 
 namespace ozSound{
@@ -35,11 +36,20 @@ VoiceInstance::VoiceInstance(IXAudio2SourceVoice* _sourceVoice, float _volume, f
 
 VoiceInstance::~VoiceInstance()
 {
+    // Voice を壊す前にチェーンの参照を切る (破棄済み Voice を触らせない)
+    effectChain_.DetachFromVoice();
+
     if (sourceVoice_)
     {
         sourceVoice_->DestroyVoice();
         sourceVoice_ = nullptr;
     }
+}
+
+void VoiceInstance::SetEffectChain(AudioEffectChain&& _chain)
+{
+    effectChain_ = std::move(_chain);
+    effectChain_.AttachToVoice(sourceVoice_);
 }
 
 void VoiceInstance::Play()
