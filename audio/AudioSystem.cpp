@@ -272,8 +272,13 @@ void AudioSystem::RemoveSubmix(const std::string& name)
 
 std::shared_ptr<SoundInstance> AudioSystem::CreateSoundInstance(const WAVEFORMATEX& _wfex, std::vector<BYTE> _mediaData, const std::string& _path)
 {
+    // WAVEFORMATEXTENSIBLE の拡張部まで含めてコピーする (PCM は拡張部を持たない)
+    const size_t extraBytes = (_wfex.wFormatTag == WAVE_FORMAT_PCM) ? 0 : _wfex.cbSize;
+    const size_t formatBytes = sizeof(WAVEFORMATEX) + extraBytes;
+
     SoundData soundData{};
-    soundData.wfex = _wfex;
+    soundData.formatBlob.resize(formatBytes);
+    memcpy(soundData.formatBlob.data(), &_wfex, formatBytes);
     soundData.mediaData = std::move(_mediaData);
     soundData.path = _path;
 

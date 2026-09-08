@@ -34,6 +34,20 @@ std::string ozSound::VST3ParameterManager::GetParameterName(int32_t index) const
     return std::string(buffer);
 }
 
+int32_t ozSound::VST3ParameterManager::FindParameterIndex(const std::string& name) const
+{
+    if (name.empty())
+        return -1;
+
+    const int32_t count = GetParameterCount();
+    for (int32_t i = 0; i < count; ++i)
+    {
+        if (GetParameterName(i) == name)
+            return i;
+    }
+    return -1;
+}
+
 double ozSound::VST3ParameterManager::GetParameter(Steinberg::Vst::ParamID id) const
 {
     if (!controller_)

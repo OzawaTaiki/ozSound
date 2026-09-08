@@ -8,9 +8,10 @@ ozSound::AudioEffect::AudioEffect(IUnknown* effect, uint32_t outputChannel, bool
 ///===================================================================
 /// 以下AudioEffectChain
 ///===================================================================
-void ozSound::AudioEffectChain::AddEffect(AudioEffect&& _effect)
+void ozSound::AudioEffectChain::AddEffect(AudioEffect&& _effect, const std::string& _name)
 {
     effects_.push_back(std::move(_effect));
+    names_.push_back(_name);
 }
 
 const XAUDIO2_EFFECT_CHAIN* ozSound::AudioEffectChain::BuildChain()
@@ -98,4 +99,29 @@ HRESULT ozSound::AudioEffectChain::GetEffectParameters(uint32_t _index, void* _p
     }
 
     return attachedVoice_->GetEffectParameters(_index, _pParams, _byteSize);
+}
+
+int32_t ozSound::AudioEffectChain::FindEffectIndex(const std::string& _name) const
+{
+    if (_name.empty())
+        return -1;
+
+    for (size_t i = 0; i < names_.size(); ++i)
+    {
+        if (names_[i] == _name)
+            return static_cast<int32_t>(i);
+    }
+    return -1;
+}
+
+HRESULT ozSound::AudioEffectChain::SetEffectEnabled(const std::string& _name, bool _enabled, uint32_t _operationSet)
+{
+    const int32_t index = FindEffectIndex(_name);
+    if (index < 0)
+    {
+        return E_INVALIDARG; // このチェーンに該当エフェクトがない
+    }
+
+    return _enabled ? EnableEffect(static_cast<uint32_t>(index), _operationSet)
+                    : DisableEffect(static_cast<uint32_t>(index), _operationSet);
 }

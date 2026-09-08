@@ -44,6 +44,50 @@ public:
     void LoadEffectDataFromJson(const json& data);
 
     /// <summary>
+    /// エフェクト定義を直接登録する（エディタ用: JSON を経由しない入口）。
+    /// 既に同じ内容 (name/path/className/type) で登録済みのものは何もしないので、
+    /// 毎フレーム呼んでも VST3 モジュールを読み直さない。
+    /// path は呼び出し側で絶対パスに解決してから渡すこと。
+    /// </summary>
+    void LoadEffectDefs(const std::vector<AudioEffectDef>& defs);
+
+    /// <summary>定義が登録済みか。</summary>
+    bool HasEffect(const std::string& effectName) const;
+
+    /// <summary>
+    /// パラメータを名前で設定する (VST3 のみ)。値は正規化値 0.0〜1.0。
+    /// 注意: パラメータは「エフェクト定義」単位で共有されるため、同じエフェクトを
+    /// 複数のボイスで鳴らしている場合は最後に生成されたインスタンスにのみ効く。
+    /// </summary>
+    bool SetEffectParameterByName(const std::string& effectName,
+                                  const std::string& paramName,
+                                  double normalizedValue);
+
+    /// <summary>
+    /// パラメータの現在値 (正規化 0.0〜1.0) を名前で取得する (VST3 のみ)。
+    /// 取得できたら true。
+    /// </summary>
+    bool GetEffectParameterByName(const std::string& effectName,
+                                  const std::string& paramName,
+                                  double* outNormalizedValue);
+
+    /// <summary>
+    /// エフェクトのパラメータ名一覧を返す (VST3 のみ)。
+    /// プラグイン未ロード / Native の場合は空の配列。
+    /// エディタでパラメータ名を選ばせるために使う。
+    /// </summary>
+    std::vector<std::string> GetParameterNames(const std::string& effectName);
+
+    /// <summary>
+    /// .vst3 モジュールに含まれるエフェクトクラス名の一覧を返す。
+    /// エフェクト定義の登録状態とは無関係に、パスさえ開ければ取得できる。
+    /// (className の指定が間違っていてプラグイン生成に失敗している状態でも
+    ///  候補を列挙できるので、エディタでの指定ミス検出に使える)
+    /// path は絶対パスで渡すこと。
+    /// </summary>
+    std::vector<std::string> GetModuleClassNames(const std::string& vst3Path);
+
+    /// <summary>
     /// Native エフェクトをファクトリーに登録する。
     /// </summary>
     void RegisterNativeEffect(const std::string& name,
@@ -79,6 +123,12 @@ private:
     };
 
     VST3PluginEntry* GetVST3PluginEntry(const std::string& effectName);
+
+    /// <summary>
+    /// 定義を1件登録し、VST3 ならモジュール/プラグインを生成する。
+    /// LoadEffectDataFromJson / LoadEffectDefs の共通実装。
+    /// </summary>
+    void RegisterEffectDef(const AudioEffectDef& def);
 
 private:
 

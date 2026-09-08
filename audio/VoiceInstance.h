@@ -2,6 +2,7 @@
 
 #include <xaudio2.h>
 
+#include "AudioEffect.h"
 
 namespace ozSound
 {
@@ -99,6 +100,25 @@ public:
     /// </summary>
     IXAudio2SourceVoice* GetSourceVoice() const { return sourceVoice_; }
 
+    /// <summary>
+    /// エフェクトチェーンの所有権を受け取り、このボイスにアタッチする。
+    /// CreateSourceVoice 時にチェーンを渡しただけだと、後から
+    /// EnableEffect / SetEffectParameters を呼ぶ手段が無くなるため、
+    /// チェーンはボイスと同じ寿命でここに保持する。
+    /// </summary>
+    void SetEffectChain(AudioEffectChain&& _chain);
+
+    /// <summary>
+    /// このボイスに適用されているエフェクトチェーン。
+    /// エフェクト無しで生成された場合は空のチェーンが返る (IsEmpty() が true)。
+    /// </summary>
+    AudioEffectChain& GetEffectChain() { return effectChain_; }
+    const AudioEffectChain& GetEffectChain() const { return effectChain_; }
+
+public:// エフェクトチェーンを所有するためコピー不可 (ムーブも shared_ptr 前提で行わない)
+    VoiceInstance(const VoiceInstance&) = delete;
+    VoiceInstance& operator=(const VoiceInstance&) = delete;
+
 private:
     /// <summary>
     /// HRESULTをチェックし、エラーがあれば例外を投げる
@@ -124,6 +144,9 @@ private:
 
     // 音声ソースボイス
     IXAudio2SourceVoice* sourceVoice_ = nullptr;
+
+    // このボイスに適用されているエフェクトチェーン (所有)
+    AudioEffectChain effectChain_ = {};
 
 
     HRESULT hr_ = S_OK;

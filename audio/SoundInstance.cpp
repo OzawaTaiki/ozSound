@@ -6,6 +6,7 @@
 #include "Logger/SoundLogger.h"
 
 #include <cassert>
+#include <utility>
 
 
 namespace ozSound
@@ -22,7 +23,7 @@ SoundInstance::~SoundInstance()
 {
 }
 
-std::shared_ptr<VoiceInstance> SoundInstance::GenerateVoiceInstance(float _volume, float _startTime, bool _loop, bool _enableOverlap, VoiceCallBack* _callback, SubmixVoice* _submix, const XAUDIO2_EFFECT_CHAIN* _effectChain)
+std::shared_ptr<VoiceInstance> SoundInstance::GenerateVoiceInstance(float _volume, float _startTime, bool _loop, bool _enableOverlap, VoiceCallBack* _callback, SubmixVoice* _submix, AudioEffectChain _effectChain)
 {
     if (!_enableOverlap)
     {
@@ -48,6 +49,9 @@ std::shared_ptr<VoiceInstance> SoundInstance::GenerateVoiceInstance(float _volum
         sendList = _submix->GetSendList();
     }
 
+    // 空チェーンなら BuildChain() は nullptr を返す (= エフェクト無しで生成)
+    const XAUDIO2_EFFECT_CHAIN* chainDesc = _effectChain.BuildChain();
+
     IXAudio2SourceVoice* pSourceVoice = nullptr;
     hresult = xAudio2->CreateSourceVoice(
         &pSourceVoice, // Source voice
@@ -56,29 +60,16 @@ std::shared_ptr<VoiceInstance> SoundInstance::GenerateVoiceInstance(float _volum
         XAUDIO2_DEFAULT_FREQ_RATIO, // Frequency ratio
         _callback,// コールバック関数
         sendList, // Send list
-        _effectChain // Effect chain
+        chainDesc // Effect chain
     );
 
-    if (!SUCCEEDED(hresult))
+    if (FAILED(hresult))
     {
-        if (FAILED(hresult)) {
-            //ozSound::Log("CreateSourceVoice failed: 0x" + std::to_string(std::hex, hresult));
-
-            switch (hresult) {
-
-            case E_INVALIDARG:
-                ozSound::Log("INVALIDARG - 引数が無効\n");
-                break;
-            case E_OUTOFMEMORY:
-                ozSound::Log("OUT_OF_MEMORY\n");
-                break;
-            case XAUDIO2_E_INVALID_CALL:
-                ozSound::Log("INVALID_CALL - XAudio2が初期化されていない\n");
-                break;
-            }
-        }
-
-        ozSound::Log("Error: Failed to create source voice\n");
+        const WAVEFORMATEX& wfex = audioSystem_->GetSoundFormat(soundID_);
+        ozSound::Log(std::format(
+            "Error: Failed to create source voice (hr=0x{:08X}, tag={}, ch={}, rate={}, bits={}, cbSize={})\n",
+            static_cast<uint32_t>(hresult), wfex.wFormatTag, wfex.nChannels,
+            wfex.nSamplesPerSec, wfex.wBitsPerSample, wfex.cbSize));
         return nullptr;
     }
 
@@ -100,6 +91,9 @@ std::shared_ptr<VoiceInstance> SoundInstance::GenerateVoiceInstance(float _volum
     pSourceVoice->SetVolume(_volume);
 
     auto voiceInstance = std::make_shared<VoiceInstance>(pSourceVoice, _volume, sampleRate_, _startTime);
+
+    // チェーンをボイスに預ける。以降 Enable/Disable はここ経由で行える。
+    voiceInstance->SetEffectChain(std::move(_effectChain));
 
     voiceInstance_.push_back(voiceInstance);
 

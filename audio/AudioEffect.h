@@ -4,6 +4,7 @@
 #include <wrl.h>
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 namespace ozSound
@@ -44,7 +45,9 @@ public:
     AudioEffectChain() = default;
     ~AudioEffectChain() = default;
 
-    void AddEffect(AudioEffect&& _effect);
+    // _name はランタイム制御でエフェクトを名前指定するためのキー。
+    // 空文字を渡した場合は index 指定でしか触れなくなる。
+    void AddEffect(AudioEffect&& _effect, const std::string& _name = "");
 
     // CreateSourceVoice等に渡す構造体を生成
     // エフェクトが0個のときはnullptrを返す
@@ -53,6 +56,7 @@ public:
     // Voice生成後に呼ぶ
     void AttachToVoice(IXAudio2Voice* _voice);
     void DetachFromVoice();
+    bool IsAttached() const { return attachedVoice_ != nullptr; }
 
     HRESULT ApplyChain();
 
@@ -61,6 +65,18 @@ public:
     HRESULT DisableEffect(uint32_t _index, uint32_t _operationSet = XAUDIO2_COMMIT_NOW);
     HRESULT SetEffectParameters(uint32_t _index, const void* _pParams, uint32_t _byteSize, uint32_t _operationSet = XAUDIO2_COMMIT_NOW);
     HRESULT GetEffectParameters(uint32_t _index, void* _pParams, uint32_t _byteSize);
+
+    // ── 名前指定のランタイム制御 ────────────────────────────────────────
+    // index 指定はチェーンの並び順に依存して壊れやすいので、
+    // イベント (SoundEventAction) からはこちらを使う。
+
+    /// <summary>エフェクト名から index を引く。見つからなければ -1。</summary>
+    int32_t FindEffectIndex(const std::string& _name) const;
+
+    /// <summary>名前指定で有効/無効を切り替える。名前が無ければ E_INVALIDARG。</summary>
+    HRESULT SetEffectEnabled(const std::string& _name, bool _enabled, uint32_t _operationSet = XAUDIO2_COMMIT_NOW);
+
+    const std::vector<std::string>& GetEffectNames() const { return names_; }
 
     bool IsEmpty() const { return effects_.empty(); }
 
@@ -72,6 +88,9 @@ public:// コピー不可 move可能
 
 private:
     std::vector<AudioEffect> effects_;
+
+    // effects_ と同じ並びのエフェクト名。名前指定の制御に使う。
+    std::vector<std::string> names_;
 
     // BuildChain()の結果を保持（ポインタ生存期間のため）
     std::vector<XAUDIO2_EFFECT_DESCRIPTOR> descriptors_;
